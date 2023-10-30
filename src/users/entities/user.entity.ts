@@ -1,14 +1,12 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { Min } from 'class-validator';
 import { UserRoleEnum } from './user.role.enum';
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
-  public id!: string; //au format uuidv4
-  @Column()
+  @PrimaryGeneratedColumn('uuid')
+  public id!: string;
+  @Column({ unique: true })
   public username!: string;
-  @Column()
-  @Min(8)
+  @Column({ unique: true })
   public email!: string;
   @Column()
   public password!: string;

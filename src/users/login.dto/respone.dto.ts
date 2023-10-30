@@ -1,5 +1,5 @@
 export interface ResponseDto {
-    success: boolean;
-    data?: any;
-    message?: string;
+  success: boolean;
+  data?: any;
+  message?: string;
 }
