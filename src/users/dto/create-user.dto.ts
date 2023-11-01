@@ -8,10 +8,10 @@ export class CreateUserDto {
   @IsNotEmpty()
   public username!: string;
   @IsEmail()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Email obligatoire' })
   public email!: string;
   @MinLength(8)
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Mot de passe obligatoire' })
   public password!: string;
   public role: UserRoleEnum;
 }

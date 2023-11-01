@@ -4,7 +4,6 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LoginDto } from './dto/login.dto';
-import { ResponseDto } from './login.dto/respone.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UserRoleEnum } from './entities/user.role.enum';
@@ -41,7 +40,6 @@ export class UsersService {
       role: savedUser.role,
     };
   }
-
   async findByEmailAndPassword(loginDto: LoginDto): Promise<{
     id: string;
     email: string;
@@ -62,11 +60,11 @@ export class UsersService {
         throw new UnauthorizedException('Mot de passe invalide');
       }
       const payload = { sub: user.id, email: user.email };
-      const accessToken = this.jwtService.sign(payload);
+      console.log('Utilisateur connecté');
       return {
         id: user.id,
         email: user.email,
-        access_token: accessToken,
+        access_token: await this.jwtService.signAsync(payload),
       };
     } catch (error) {
       throw error;

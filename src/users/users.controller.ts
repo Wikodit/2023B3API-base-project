@@ -9,11 +9,14 @@ import {
   ValidationPipe,
   Param,
   NotFoundException,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { UserRoleEnum } from './entities/user.role.enum';
+import { AuthGuard } from './auth/auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -49,13 +52,21 @@ export class UsersController {
       throw error;
     }
   }
-  @Get()
-  async findAll() {
-    try {
-      return this.usersService.findAll();
-    } catch (error) {
-      throw error;
-    }
+  @UseGuards(AuthGuard)
+  @Get('me')
+  async getProfile(@Req() req): Promise<{
+    id: string;
+    username: string;
+    role: UserRoleEnum;
+    email: string;
+  }> {
+    const user = await this.usersService.findOne(req.user.sub);
+    return {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      email: user.email,
+    };
   }
   @Get(':id')
   async findOne(@Param('id') id: string) {
@@ -65,6 +76,14 @@ export class UsersController {
         throw new NotFoundException('Utilisateur non trouvé');
       }
       return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+  @Get()
+  async findAll() {
+    try {
+      return this.usersService.findAll();
     } catch (error) {
       throw error;
     }
