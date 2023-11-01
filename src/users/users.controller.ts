@@ -16,7 +16,7 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
-import { AuthGuard } from './auth/auth.guard';
+//import { AuthGuard } from './auth/auth.guard';
 import { UserResponseDto } from './dto/user-response-dto';
 import { Public } from './auth/public.decorator';
 import { User } from './entities/user.entity';
@@ -72,7 +72,7 @@ export class UsersController {
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<UserResponseDto> {
     try {
-      const user: User = await this.usersService.findOne(id);
+      const user = await this.usersService.findOne(id);
       if (!user) {
         throw new NotFoundException('Utilisateur non trouvé');
       }
@@ -83,7 +83,11 @@ export class UsersController {
         email: user.email,
       };
     } catch (error) {
-      throw error;
+      if (error instanceof NotFoundException) {
+        throw error;
+      } else {
+        throw new BadRequestException('Identifiant invalide');
+      }
     }
   }
   @Get()
