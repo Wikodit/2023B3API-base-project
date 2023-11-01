@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +11,7 @@ import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UserRoleEnum } from './entities/user.role.enum';
+import { UserResponseDto } from './dto/user-response-dto';
 
 @Injectable()
 export class UsersService {
@@ -16,12 +21,7 @@ export class UsersService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<{
-    id: string;
-    username: string;
-    role: UserRoleEnum;
-    email: string;
-  }> {
+  async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
 
@@ -71,9 +71,20 @@ export class UsersService {
     }
   }
   async findOne(id: string): Promise<User> {
-    return this.usersRepository.findOne({ where: { id } });
+    try {
+      return this.usersRepository.findOne({ where: { id } });
+    } catch (error) {
+      throw new BadRequestException('Something bad happened', {
+        cause: new Error(),
+        description: 'Some error description',
+      });
+    }
   }
   async findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+    try {
+      return this.usersRepository.find();
+    } catch (error) {
+      throw error;
+    }
   }
 }
