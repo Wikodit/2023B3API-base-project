@@ -10,7 +10,6 @@ import {
   Param,
   NotFoundException,
   Req,
-  UseGuards,
   BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';

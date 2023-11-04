@@ -5,10 +5,21 @@ import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './users/auth/auth.guard';
+import { ProjectsModule } from './projects/projects.module';
+import { Project } from './projects/entities/project.entity';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConstants } from './users/auth/constant';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.register({
+      global: true,
+      secret: jwtConstants.secret,
+      signOptions: { expiresIn: '1h' },
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -18,12 +29,13 @@ import { AuthGuard } from './users/auth/auth.guard';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User], //__dirname + '/../**/*.entity.js'
+        entities: [User, Project], //__dirname + '/../**/*.entity.js'
         synchronize: true,
       }),
       inject: [ConfigService],
     }),
     UsersModule,
+    ProjectsModule,
   ],
   controllers: [],
   providers: [
