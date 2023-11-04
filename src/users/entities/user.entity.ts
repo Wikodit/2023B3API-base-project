@@ -1,7 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { UserRoleEnum } from './user.role.enum';
-import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
+import { ProjectUser } from '../../project-user/entities/project-user.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -19,4 +19,9 @@ export class User {
     default: UserRoleEnum.Employee,
   })
   role?: UserRoleEnum;
+  @OneToMany(
+    () => ProjectUser,
+    (projectUser: ProjectUser) => projectUser.userId,
+  )
+  projectUser: ProjectUser[];
 }

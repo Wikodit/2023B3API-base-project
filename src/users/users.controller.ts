@@ -64,7 +64,6 @@ export class UsersController {
       throw error;
     }
   }
-  //@UseGuards(AuthGuard)
   @Get('me')
   @ApiOperation({ summary: 'Get user profile' })
   @ApiResponse({ status: HttpStatus.OK, type: UserResponseDto })

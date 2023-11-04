@@ -10,6 +10,8 @@ import { Project } from './projects/entities/project.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './users/auth/constant';
+import { ProjectUserModule } from './project-user/project-user.module';
+import { ProjectUser } from './project-user/entities/project-user.entity';
 
 @Module({
   imports: [
@@ -29,13 +31,15 @@ import { jwtConstants } from './users/auth/constant';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Project], //__dirname + '/../**/*.entity.js'
+        entities: [User, Project, ProjectUser], //__dirname + '/../**/*.entity.js'
         synchronize: true,
+        autoLoadEntities: true,
       }),
       inject: [ConfigService],
     }),
     UsersModule,
     ProjectsModule,
+    ProjectUserModule,
   ],
   controllers: [],
   providers: [

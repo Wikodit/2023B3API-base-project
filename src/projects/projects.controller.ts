@@ -10,7 +10,6 @@ import {
   Inject,
   NotFoundException,
   UnauthorizedException,
-  UseGuards,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -19,9 +18,7 @@ import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { ProjectResponseDto } from './dto/project-response-dto';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '../users/auth/auth.guard';
 import { Public } from '../users/auth/public.decorator';
-import * as http from 'http';
 
 @Controller('projects')
 @ApiTags('Project')
@@ -30,51 +27,65 @@ export class ProjectsController {
     @Inject(UsersService)
     public usersService: UsersService,
     private readonly projectsService: ProjectsService,
-  ) {
-    //const userRole = this.usersService.
-  }
-
+  ) {}
   @Post()
-  create(@Body() createProjectDto: CreateProjectDto) {
-    return this.projectsService.create(createProjectDto);
-  }
-
-  @Get()
-  //@UseGuards(AuthGuard)
-  async findAll(@Req() req) {
-    const user: User = req.user;
-    console.log(user);
-    return await this.projectsService.findAll();
-    /*
+  async create(@Req() req, @Body() createProjectDto: CreateProjectDto) {
     try {
       const user: User = await this.usersService.findOne(req.user.sub);
-      console.log(user);
-      if (!user) {
-        throw new UnauthorizedException('Unidentified user');
-      } else {
-        if (user.role === 'Employee') {
-          return;
-        }
-        if (user.role === 'ProjectManager' || user.role === 'Admin') {
-          return await this.projectsService.findAll();
-        }
+      const userRole = user.role;
+      if (userRole === 'Employee') {
+        throw new UnauthorizedException(`${userRole} can't create project.`);
+      }
+      if (userRole === 'ProjectManager' || userRole === 'Admin') {
+        console.log(`${userRole} + ${typeof userRole}`);
+        return await this.projectsService.create(userRole, createProjectDto);
       }
     } catch (error) {
       throw error;
     }
-     */
+  }
+
+  //@Public()
+  @Get()
+  //@UseGuards(AuthGuard)
+  async findAll(@Req() req) {
+    try {
+      const user: User = await this.usersService.findOne(req.user.sub);
+
+      const userRole = user.role;
+      if (userRole === 'Employee') {
+        console.log(`${userRole} + ${typeof userRole}`);
+      }
+      if (userRole === 'ProjectManager' || userRole === 'Admin') {
+        console.log(`${userRole} + ${typeof userRole}`);
+        return await this.projectsService.findAll();
+      }
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<ProjectResponseDto> {
+  async findOne(
+    @Req() req,
+    @Param('id') id: string,
+  ): Promise<Promise<ProjectResponseDto> | string> {
     try {
-      const project = await this.projectsService.findOne(id);
-      if (!project) {
-        throw new NotFoundException('Project not found');
+      const user: User = await this.usersService.findOne(req.user.sub);
+      const userRole = user.role;
+      if (userRole !== 'Employee') {
+        const project = await this.projectsService.findOne(id);
+        if (!project) {
+          throw new NotFoundException('Project not found');
+        }
+        return {
+          id: project.id,
+          description: project.description,
+          referringEmployeeId: project.referringEmployeeId,
+        };
+      } else {
+        return `TODO`;
       }
-      return {
-        id: project.id,
-      };
     } catch (error) {
       throw error;
     }
