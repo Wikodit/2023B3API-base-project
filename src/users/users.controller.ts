@@ -15,18 +15,27 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
-//import { AuthGuard } from './auth/auth.guard';
 import { UserResponseDto } from './dto/user-response-dto';
 import { Public } from './auth/public.decorator';
 import { User } from './entities/user.entity';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller('users')
+@ApiTags('Users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Public()
   @UsePipes(new ValidationPipe())
   @Post('/auth/sign-up')
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiBody({ type: CreateUserDto })
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body() createUserDto: CreateUserDto,
@@ -41,6 +50,8 @@ export class UsersController {
   @Public()
   @Post('/auth/login')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Login user' })
+  @ApiBody({ type: LoginDto })
   async login(@Body() loginDto: LoginDto): Promise<{
     id: string;
     email: string;
@@ -55,6 +66,8 @@ export class UsersController {
   }
   //@UseGuards(AuthGuard)
   @Get('me')
+  @ApiOperation({ summary: 'Get user profile' })
+  @ApiResponse({ status: HttpStatus.OK, type: UserResponseDto })
   async getProfile(@Req() req): Promise<UserResponseDto> {
     try {
       const user: User = await this.usersService.findOne(req.user.sub);
@@ -68,12 +81,16 @@ export class UsersController {
       throw error;
     }
   }
+
+  @ApiOperation({ summary: 'Get user by ID' })
+  @ApiParam({ name: 'id', type: String, description: 'User ID' })
+  @ApiResponse({ status: HttpStatus.OK, type: UserResponseDto })
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<UserResponseDto> {
     try {
       const user = await this.usersService.findOne(id);
       if (!user) {
-        throw new NotFoundException('Utilisateur non trouvé');
+        throw new NotFoundException('Unidentified User');
       }
       return {
         id: user.id,
@@ -85,11 +102,16 @@ export class UsersController {
       if (error instanceof NotFoundException) {
         throw error;
       } else {
-        throw new BadRequestException('Identifiant invalide');
+        throw new BadRequestException('Invalid input data.');
       }
     }
   }
   @Get()
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [UserResponseDto],
+  })
   async findAll(): Promise<
     Array<{
       id: string;

@@ -25,14 +25,13 @@ export class UsersService {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
 
-    const user = this.usersRepository.create({
+    const user: User = this.usersRepository.create({
       username: createUserDto.username,
       email: createUserDto.email,
       password: hashedPassword,
       role: createUserDto.role ?? UserRoleEnum.Employee,
     });
     const savedUser = await this.usersRepository.save(user);
-    console.log('Utilisateur créé');
     return {
       id: savedUser.id,
       username: savedUser.username,
@@ -50,17 +49,16 @@ export class UsersService {
         where: { email: loginDto.email },
       });
       if (!user) {
-        throw new Error('Utilisateur non trouvé');
+        throw new Error('User not found');
       }
       const passwordMatch = await bcrypt.compare(
         loginDto.password,
         user.password,
       );
       if (!passwordMatch) {
-        throw new UnauthorizedException('Mot de passe invalide');
+        throw new UnauthorizedException('Invalid password');
       }
       const payload = { sub: user.id, email: user.email };
-      console.log('Utilisateur connecté');
       return {
         id: user.id,
         email: user.email,

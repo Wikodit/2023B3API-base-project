@@ -1,6 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { UserRoleEnum } from './user.role.enum';
-//import { Exclude } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -9,7 +10,7 @@ export class User {
   public username!: string;
   @Column({ unique: true })
   public email!: string;
-  //@Exclude()
+  @Exclude()
   @Column()
   public password!: string;
   @Column({
