@@ -10,7 +10,7 @@ import { Project } from './projects/entities/project.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './users/auth/constant';
-import { ProjectUserModule } from './project-user/project-user.module';
+import { ProjectUsersModule } from './project-user/project-users.module';
 import { ProjectUser } from './project-user/entities/project-user.entity';
 
 @Module({
@@ -39,7 +39,7 @@ import { ProjectUser } from './project-user/entities/project-user.entity';
     }),
     UsersModule,
     ProjectsModule,
-    ProjectUserModule,
+    ProjectUsersModule,
   ],
   controllers: [],
   providers: [

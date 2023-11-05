@@ -19,6 +19,7 @@ import { ProjectResponseDto } from './dto/project-response-dto';
 import { ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from '../users/dto/user-response-dto';
 import { UserRoleEnum } from '../users/entities/user.role.enum';
+import { Project } from './entities/project.entity';
 
 @Controller('projects')
 @ApiTags('Project')
@@ -37,7 +38,7 @@ export class ProjectsController {
       const user: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
-      const userRole = user.role;
+      const userRole: UserRoleEnum = user.role;
       if (userRole === 'Employee') {
         throw new UnauthorizedException(`${userRole} can't create project.`);
       }
@@ -55,21 +56,17 @@ export class ProjectsController {
   }
 
   @Get()
-  async findAll(@Req() req) {
+  async findAll(@Req() req): Promise<Project[]> {
     try {
       const user: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
-      // A enlever ?
-      if (!user) {
-        throw new Error('No access');
-      }
       const userRole: UserRoleEnum = user.role;
-      if (userRole === 'Employee') {
-        console.log(`${userRole} + ${typeof userRole}`);
-      }
       if (userRole === 'ProjectManager' || userRole === 'Admin') {
         return await this.projectsService.findAll();
+      }
+      if (userRole === 'Employee') {
+        console.log(`${userRole} + ${typeof userRole}`);
       }
     } catch (error) {
       throw error;
@@ -91,14 +88,20 @@ export class ProjectsController {
         if (!project) {
           throw new NotFoundException('Project not found');
         }
-        return {
+        return project;
+        /*
+        {
           id: project.id,
           name: project.name,
           description: project.description,
           referringEmployeeId: project.referringEmployeeId,
         };
-      } else {
-        return `TODO`;
+         */
+      }
+      if (userRole === 'Employee') {
+        //A finir
+        const project = await this.projectsService.findOne(id);
+        return project;
       }
     } catch (error) {
       throw error;

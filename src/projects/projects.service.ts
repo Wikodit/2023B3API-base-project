@@ -33,7 +33,7 @@ export class ProjectsService {
       } else {
         const project: Project = this.projectsRepository.create({
           name: createProjectDto.name,
-          description: 'Description CreateProject', //description: createProjectDto.description??
+          description: 'CreateProject Description', //description: createProjectDto.description??
           referringEmployeeId: referringEmployeeId,
         });
         const referringEmployee: UserResponseDto =
