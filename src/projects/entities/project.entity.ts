@@ -1,6 +1,13 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { ProjectUser } from '../../project-user/entities/project-user.entity';
 import { IsOptional } from 'class-validator';
+import { User } from '../../users/entities/user.entity';
 @Entity()
 export class Project {
   @PrimaryGeneratedColumn('uuid')
@@ -10,7 +17,9 @@ export class Project {
   @IsOptional()
   @Column()
   public description?: string | null;
-  @Column()
+  @ManyToOne(() => User, (user: User) => user.employeeReferring, {
+    onDelete: 'SET NULL',
+  })
   public referringEmployeeId!: string;
   @IsOptional()
   @OneToMany(

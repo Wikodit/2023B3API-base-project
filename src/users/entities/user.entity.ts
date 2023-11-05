@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { UserRoleEnum } from './user.role.enum';
 import { Exclude } from 'class-transformer';
 import { ProjectUser } from '../../project-user/entities/project-user.entity';
+import { Project } from '../../projects/entities/project.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -24,4 +25,7 @@ export class User {
     (projectUser: ProjectUser) => projectUser.userId,
   )
   projectUser: ProjectUser[];
+
+  @OneToMany(() => Project, (project: Project) => project.referringEmployeeId)
+  public employeeReferring: Project[];
 }

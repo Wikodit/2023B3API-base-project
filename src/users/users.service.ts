@@ -31,7 +31,7 @@ export class UsersService {
       password: hashedPassword,
       role: createUserDto.role ?? UserRoleEnum.Employee,
     });
-    const savedUser = await this.usersRepository.save(user);
+    const savedUser: User = await this.usersRepository.save(user);
     return {
       id: savedUser.id,
       username: savedUser.username,
@@ -39,13 +39,13 @@ export class UsersService {
       role: savedUser.role,
     };
   }
-  async findByEmailAndPassword(loginDto: LoginDto): Promise<{
+  async login(loginDto: LoginDto): Promise<{
     id: string;
     email: string;
     access_token: string;
   }> {
     try {
-      const user = await this.usersRepository.findOne({
+      const user: User = await this.usersRepository.findOne({
         where: { email: loginDto.email },
       });
       if (!user) {
@@ -68,9 +68,12 @@ export class UsersService {
       throw error;
     }
   }
-  async findOne(id: string): Promise<User> {
+  async findOne(id: string): Promise<UserResponseDto> {
     try {
-      return this.usersRepository.findOne({ where: { id } });
+      return this.usersRepository.findOne({
+        where: { id },
+        select: ['id', 'username', 'role', 'email', 'employeeReferring'],
+      });
     } catch (error) {
       throw new BadRequestException('Something bad happened', {
         cause: new Error(),
@@ -78,7 +81,7 @@ export class UsersService {
       });
     }
   }
-  async findAll(): Promise<User[]> {
+  async findAll(): Promise<UserResponseDto[]> {
     try {
       return this.usersRepository.find();
     } catch (error) {

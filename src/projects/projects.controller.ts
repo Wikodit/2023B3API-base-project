@@ -14,11 +14,11 @@ import {
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { ProjectResponseDto } from './dto/project-response-dto';
 import { ApiTags } from '@nestjs/swagger';
-import { Public } from '../users/auth/public.decorator';
+import { UserResponseDto } from '../users/dto/user-response-dto';
+import { UserRoleEnum } from '../users/entities/user.role.enum';
 
 @Controller('projects')
 @ApiTags('Project')
@@ -29,35 +29,46 @@ export class ProjectsController {
     private readonly projectsService: ProjectsService,
   ) {}
   @Post()
-  async create(@Req() req, @Body() createProjectDto: CreateProjectDto) {
+  async create(
+    @Req() req,
+    @Body() createProjectDto: CreateProjectDto,
+  ): Promise<ProjectResponseDto> {
     try {
-      const user: User = await this.usersService.findOne(req.user.sub);
+      const user: UserResponseDto = await this.usersService.findOne(
+        req.user.sub,
+      );
       const userRole = user.role;
       if (userRole === 'Employee') {
         throw new UnauthorizedException(`${userRole} can't create project.`);
       }
       if (userRole === 'ProjectManager' || userRole === 'Admin') {
-        console.log(`${userRole} + ${typeof userRole}`);
-        return await this.projectsService.create(userRole, createProjectDto);
+        const project: ProjectResponseDto = await this.projectsService.create(
+          req.body.referringEmployeeId,
+          userRole,
+          createProjectDto,
+        );
+        return project;
       }
     } catch (error) {
       throw error;
     }
   }
 
-  //@Public()
   @Get()
-  //@UseGuards(AuthGuard)
   async findAll(@Req() req) {
     try {
-      const user: User = await this.usersService.findOne(req.user.sub);
-
-      const userRole = user.role;
+      const user: UserResponseDto = await this.usersService.findOne(
+        req.user.sub,
+      );
+      // A enlever ?
+      if (!user) {
+        throw new Error('No access');
+      }
+      const userRole: UserRoleEnum = user.role;
       if (userRole === 'Employee') {
         console.log(`${userRole} + ${typeof userRole}`);
       }
       if (userRole === 'ProjectManager' || userRole === 'Admin') {
-        console.log(`${userRole} + ${typeof userRole}`);
         return await this.projectsService.findAll();
       }
     } catch (error) {
@@ -69,9 +80,11 @@ export class ProjectsController {
   async findOne(
     @Req() req,
     @Param('id') id: string,
-  ): Promise<Promise<ProjectResponseDto> | string> {
+  ): Promise<Promise<CreateProjectDto> | string> {
     try {
-      const user: User = await this.usersService.findOne(req.user.sub);
+      const user: UserResponseDto = await this.usersService.findOne(
+        req.user.sub,
+      );
       const userRole = user.role;
       if (userRole !== 'Employee') {
         const project = await this.projectsService.findOne(id);
@@ -80,6 +93,7 @@ export class ProjectsController {
         }
         return {
           id: project.id,
+          name: project.name,
           description: project.description,
           referringEmployeeId: project.referringEmployeeId,
         };

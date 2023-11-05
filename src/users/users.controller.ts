@@ -17,7 +17,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { UserResponseDto } from './dto/user-response-dto';
 import { Public } from './auth/public.decorator';
-import { User } from './entities/user.entity';
 import {
   ApiBody,
   ApiOperation,
@@ -41,7 +40,8 @@ export class UsersController {
     @Body() createUserDto: CreateUserDto,
   ): Promise<UserResponseDto> {
     try {
-      const user = await this.usersService.create(createUserDto);
+      const user: UserResponseDto =
+        await this.usersService.create(createUserDto);
       return user;
     } catch (error) {
       throw error;
@@ -58,7 +58,7 @@ export class UsersController {
     access_token: string;
   }> {
     try {
-      const user = await this.usersService.findByEmailAndPassword(loginDto);
+      const user = await this.usersService.login(loginDto);
       return user;
     } catch (error) {
       throw error;
@@ -69,7 +69,9 @@ export class UsersController {
   @ApiResponse({ status: HttpStatus.OK, type: UserResponseDto })
   async getProfile(@Req() req): Promise<UserResponseDto> {
     try {
-      const user: User = await this.usersService.findOne(req.user.sub);
+      const user: UserResponseDto = await this.usersService.findOne(
+        req.user.sub,
+      );
       return {
         id: user.id,
         username: user.username,
@@ -111,17 +113,10 @@ export class UsersController {
     status: HttpStatus.OK,
     type: [UserResponseDto],
   })
-  async findAll(): Promise<
-    Array<{
-      id: string;
-      username: string;
-      role: string;
-      email: string;
-    }>
-  > {
+  async findAll(): Promise<UserResponseDto[]> {
     try {
-      const users = await this.usersService.findAll();
-      const usersResponse = users.map((user) => ({
+      const users: UserResponseDto[] = await this.usersService.findAll();
+      const usersResponse = users.map((user: UserResponseDto) => ({
         id: user.id,
         username: user.username,
         role: user.role,
