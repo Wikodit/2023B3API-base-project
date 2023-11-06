@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Req,
+  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ProjectUsersService } from './project-users.service';
 import { CreateProjectUsersDto } from './dto/create-project-users.dto';
@@ -15,6 +17,8 @@ import { ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from '../users/dto/user-response-dto';
 import { UserRoleEnum } from '../users/entities/user.role.enum';
 import { UsersService } from '../users/users.service';
+import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
+import { ProjectUser } from './entities/project-user.entity';
 @ApiTags('Project-Users')
 @Controller('project-users')
 export class ProjectUsersController {
@@ -24,15 +28,26 @@ export class ProjectUsersController {
   ) {}
 
   @Post()
-  create(@Body() createProjectUsersDto: CreateProjectUsersDto) {
-    return this.projectUsersService.create(createProjectUsersDto);
+  async create(
+    @Req() req,
+    @Body() createProjectUsersDto: CreateProjectUsersDto,
+  ): Promise<ProjectUser> {
+    try {
+      const user: UserResponseDto = await this.usersService.findOne(
+        req.user.sub,
+      );
+      const userRole: UserRoleEnum = user.role;
+      if (userRole === 'Employee') {
+        throw new UnauthorizedException(
+          `${user.username} cannot assign a project to an employee`,
+        );
+      }
+      return this.projectUsersService.create(createProjectUsersDto);
+    } catch (error) {
+      throw error;
+    }
   }
 
-  /*
-  - En tant qu'Administrateurs ou Chef de projet, je veux pouvoir voir toutes les assignations
-  des employés aux différents projets.
-  - En tant qu'Employé, je veux pouvoir voir toutes mes assignations aux différents projets.
-   */
   @Get()
   async findAll(@Req() req) {
     try {
@@ -41,7 +56,11 @@ export class ProjectUsersController {
       );
       const userRole: UserRoleEnum = user.role;
       if (userRole === 'ProjectManager' || userRole === 'Admin') {
-        return this.projectUsersService.findAll();
+        const projectUser = await this.projectUsersService.findAll();
+        if (!projectUser) {
+          throw new NotFoundException('ProjectUser not found');
+        }
+        return projectUser;
       }
       if (userRole === 'Employee') {
         console.log(`${userRole} + ${typeof userRole}`);
@@ -50,8 +69,15 @@ export class ProjectUsersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.projectUsersService.findOne(+id);
+  async findOne(@Req() req, @Param('id') id: string) {
+    try {
+      const user: UserResponseDto = await this.usersService.findOne(
+        req.user.sub,
+      );
+      return this.projectUsersService.findOne(id, user);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Patch(':id')

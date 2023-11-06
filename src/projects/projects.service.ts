@@ -12,12 +12,15 @@ import { Project } from './entities/project.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProjectResponseDto } from './dto/project-response-dto';
 import { UserResponseDto } from '../users/dto/user-response-dto';
+import { ProjectUsersService } from '../project-user/project-users.service';
 
 @Injectable()
 export class ProjectsService {
   constructor(
     @Inject(UsersService)
     public usersService: UsersService,
+    @Inject(ProjectUsersService)
+    public projectUsersService: ProjectUsersService,
     @InjectRepository(Project)
     private projectsRepository: Repository<Project>,
   ) {}
@@ -59,17 +62,56 @@ export class ProjectsService {
       }
     }
   }
-  async findAll(): Promise<Project[]> {
+  async findAll(): Promise<
+    {
+      referringEmployeeId: string;
+      name: string;
+      referringEmployee: UserResponseDto;
+      id: string;
+    }[]
+  > {
     try {
-      return this.projectsRepository.find();
+      const projects: ProjectResponseDto[] =
+        await this.projectsRepository.find();
+
+      const projectPromises = projects.map(
+        async (project: ProjectResponseDto) => {
+          const user: UserResponseDto = await this.usersService.findOne(
+            project.referringEmployeeId,
+          );
+          return {
+            id: project.id,
+            name: project.name,
+            referringEmployeeId: project.referringEmployeeId,
+            referringEmployee: user,
+          };
+        },
+      );
+
+      const projectResults = await Promise.all(projectPromises);
+
+      return projectResults;
+      /*
+      projects.map((project) => {
+        const referringEmployee: UserResponseDto =
+          await this.usersService.findOne(project.referringEmployeeId);
+        project.add(referringEmployee);
+      });
+      return projects;
+       */
     } catch (error) {
       throw error;
     }
   }
 
-  findOne(id: string): Promise<Project> {
+  findOne(id: string, user: UserResponseDto): Promise<Project> {
     try {
-      return this.projectsRepository.findOne({ where: { id } });
+      if (user.role !== 'Employee') {
+        return this.projectsRepository.findOne({ where: { id } });
+      } else {
+        const projectUsersList = this.projectUsersService.findAll(); //Plutot findOne ?
+        console.error(projectUsersList);
+      }
     } catch (error) {
       throw new BadRequestException('Something bad happened', {
         cause: new Error(),

@@ -4,6 +4,7 @@ import { ProjectUsersController } from './project-users.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProjectUser } from './entities/project-user.entity';
 import { UsersModule } from '../users/users.module';
+import { ProjectsModule } from '../projects/projects.module';
 
 @Module({
   imports: [UsersModule, TypeOrmModule.forFeature([ProjectUser])],

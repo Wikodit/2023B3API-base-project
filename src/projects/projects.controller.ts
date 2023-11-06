@@ -56,17 +56,19 @@ export class ProjectsController {
   }
 
   @Get()
-  async findAll(@Req() req): Promise<Project[]> {
+  async findAll(@Req() req): Promise<ProjectResponseDto[] | string> {
     try {
       const user: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
       const userRole: UserRoleEnum = user.role;
       if (userRole === 'ProjectManager' || userRole === 'Admin') {
-        return await this.projectsService.findAll();
+        const projects = await this.projectsService.findAll();
+        return projects;
       }
       if (userRole === 'Employee') {
         console.log(`${userRole} + ${typeof userRole}`);
+        return 'TODO'; //Et enlever retour string
       }
     } catch (error) {
       throw error;
@@ -82,27 +84,11 @@ export class ProjectsController {
       const user: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
-      const userRole = user.role;
-      if (userRole !== 'Employee') {
-        const project = await this.projectsService.findOne(id);
-        if (!project) {
-          throw new NotFoundException('Project not found');
-        }
-        return project;
-        /*
-        {
-          id: project.id,
-          name: project.name,
-          description: project.description,
-          referringEmployeeId: project.referringEmployeeId,
-        };
-         */
+      const project = await this.projectsService.findOne(id, user);
+      if (!project) {
+        throw new NotFoundException('Project not found');
       }
-      if (userRole === 'Employee') {
-        //A finir
-        const project = await this.projectsService.findOne(id);
-        return project;
-      }
+      return project;
     } catch (error) {
       throw error;
     }
