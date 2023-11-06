@@ -19,6 +19,7 @@ import { UserRoleEnum } from '../users/entities/user.role.enum';
 import { UsersService } from '../users/users.service';
 import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
 import { ProjectUser } from './entities/project-user.entity';
+import { User } from '../users/entities/user.entity';
 @ApiTags('Project-Users')
 @Controller('project-users')
 export class ProjectUsersController {
@@ -42,7 +43,7 @@ export class ProjectUsersController {
           `${user.username} cannot assign a project to an employee`,
         );
       }
-      return this.projectUsersService.create(createProjectUsersDto);
+      return this.projectUsersService.create(createProjectUsersDto, user);
     } catch (error) {
       throw error;
     }
@@ -51,20 +52,15 @@ export class ProjectUsersController {
   @Get()
   async findAll(@Req() req) {
     try {
-      const user: UserResponseDto = await this.usersService.findOne(
+      const userRequest: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
-      const userRole: UserRoleEnum = user.role;
-      if (userRole === 'ProjectManager' || userRole === 'Admin') {
-        const projectUser = await this.projectUsersService.findAll();
-        if (!projectUser) {
-          throw new NotFoundException('ProjectUser not found');
-        }
-        return projectUser;
+
+      const projectUser = await this.projectUsersService.findAll(userRequest);
+      if (!projectUser) {
+        throw new NotFoundException('ProjectUser not found');
       }
-      if (userRole === 'Employee') {
-        console.log(`${userRole} + ${typeof userRole}`);
-      }
+      return projectUser;
     } catch (error) {}
   }
 

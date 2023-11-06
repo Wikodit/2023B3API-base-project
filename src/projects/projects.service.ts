@@ -109,9 +109,20 @@ export class ProjectsService {
       if (user.role !== 'Employee') {
         return this.projectsRepository.findOne({ where: { id } });
       } else {
-        const projectUsersList = this.projectUsersService.findAll(); //Plutot findOne ?
-        console.error(projectUsersList);
+        //const projectUsersList = this.projectUsersService.findAll(); //Plutot findOne ?
+        //console.error(projectUsersList);
       }
+    } catch (error) {
+      throw new BadRequestException('Something bad happened', {
+        cause: new Error(),
+        description: 'Some error description',
+      });
+    }
+  }
+  //A changer
+  findForAdmin(id: string): Promise<ProjectResponseDto> {
+    try {
+      return this.projectsRepository.findOne({ where: { id } });
     } catch (error) {
       throw new BadRequestException('Something bad happened', {
         cause: new Error(),
