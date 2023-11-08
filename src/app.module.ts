@@ -12,6 +12,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './users/auth/constant';
 import { ProjectUsersModule } from './project-user/project-users.module';
 import { ProjectUser } from './project-user/entities/project-user.entity';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ProjectUser } from './project-user/entities/project-user.entity';
     UsersModule,
     ProjectsModule,
     ProjectUsersModule,
+    EventsModule,
   ],
   controllers: [],
   providers: [

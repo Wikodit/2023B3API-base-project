@@ -68,6 +68,15 @@ export class UsersService {
       throw error;
     }
   }
+
+  async findAll(): Promise<UserResponseDto[]> {
+    try {
+      return this.usersRepository.find();
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async findOne(id: string): Promise<UserResponseDto> {
     try {
       return this.usersRepository.findOne({
@@ -79,13 +88,6 @@ export class UsersService {
         cause: new Error(),
         description: 'Some error description',
       });
-    }
-  }
-  async findAll(): Promise<UserResponseDto[]> {
-    try {
-      return this.usersRepository.find();
-    } catch (error) {
-      throw error;
     }
   }
 }
