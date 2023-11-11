@@ -23,8 +23,7 @@ export class Project {
     onDelete: 'SET NULL',
   })
   public referringEmployeeId!: string;
-  @IsOptional()
-  public referringEmployee: UserResponseDto;
+  public referringEmployee!: UserResponseDto;
   @IsOptional()
   @OneToMany(
     () => ProjectUser,

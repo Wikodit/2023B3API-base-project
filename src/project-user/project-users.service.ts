@@ -15,9 +15,7 @@ import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
 import { UsersService } from '../users/users.service';
 import { ProjectsService } from '../projects/projects.service';
 import { ProjectResponseDto } from '../projects/dto/project-response-dto';
-import { CreateProjectDto } from '../projects/dto/create-project.dto';
 import { ProjectUsersResponseAdminDto } from './dto/project-users-response-admin.dto';
-import { Project } from '../projects/entities/project.entity';
 import { ProjectReponseAdminDto } from '../projects/dto/project-reponse-admin.dto';
 @Injectable()
 export class ProjectUsersService {
@@ -38,36 +36,27 @@ export class ProjectUsersService {
       const projectUsers: ProjectUser = this.projectUsersRepository.create(
         createProjectUsersDto,
       );
-
-      const datesProjects = await this.findDatesByUserId(
-        createProjectUsersDto.userId,
+      const userAssigned: UserResponseDto = await this.usersService.findOne(
+        projectUsers.userId,
       );
-      //console.log('DATES');
-      //console.log(datesProjects);
+
+      const projectAssigned: ProjectResponseDto =
+        await this.projectsService.findOneAdmin(projectUsers.projectId);
+
+      if (!projectAssigned || !userAssigned) {
+        throw new NotFoundException("Can't assign project, project not found");
+      }
+      const employeeReferring: UserResponseDto =
+        await this.usersService.findOne(projectAssigned.referringEmployeeId);
+
       if (user.role === 'ProjectManager') {
         const savedProjectUsers: ProjectUser =
           await this.projectUsersRepository.save(projectUsers);
-
-        if (!savedProjectUsers.userId) {
-          throw new NotFoundException("Can't assign project, user not found");
-        }
-
-        //console.log(savedProjectUsers.userId);
         return savedProjectUsers;
       }
       if (user.role === 'Admin') {
         const savedProjectUsers: ProjectUser =
           await this.projectUsersRepository.save(projectUsers);
-
-        const userAssigned: UserResponseDto = await this.usersService.findOne(
-          projectUsers.userId,
-        );
-        const projectAssigned: ProjectResponseDto =
-          await this.projectsService.findForAdmin(projectUsers.projectId);
-        if (!savedProjectUsers.userId) {
-          throw new NotFoundException("Can't assign project, user not found");
-        }
-        //ICI PROBLEME LORS DU PROJECT RETOUR, FAUT RENVOYER LE REFERRENIGMANAGERID
         const adminResponse: ProjectUsersResponseAdminDto = {
           id: savedProjectUsers.id,
           startDate: savedProjectUsers.startDate,
@@ -75,12 +64,11 @@ export class ProjectUsersService {
           userId: savedProjectUsers.userId,
           projectId: savedProjectUsers.projectId,
           user: userAssigned,
-          //projectAssigned,
           project: {
             id: projectAssigned.id,
             name: projectAssigned.name,
             referringEmployeeId: projectAssigned.referringEmployeeId,
-            referringEmployee: projectAssigned.referringEmployee,
+            referringEmployee: employeeReferring,
           },
         };
         return adminResponse;
@@ -112,30 +100,9 @@ export class ProjectUsersService {
   }
   async managerAndAdminfindAll(): Promise<ProjectReponseAdminDto[] | void> {
     try {
-      const projectList = await this.projectsService.findAllForAdmin();
+      const projectList: ProjectReponseAdminDto[] =
+        await this.projectsService.findAllForAdmin();
       return projectList;
-      // const userRole: string = userRequest.role;
-      /*
-    TYPE ATTENDU :
-         type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: {
-                      type: 'string',
-                    },
-                    name: {
-                      type: 'string',
-                    },
-                    referringEmployeeId: {
-                      type: 'string',
-                    },
-                  },
-                  required: ['name', 'id', 'referringEmployeeId'],
-                  additionalProperties: false,
-                },
-              });
-         */
     } catch (error) {
       throw error;
     }

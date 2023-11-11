@@ -19,7 +19,6 @@ import { UserRoleEnum } from '../users/entities/user.role.enum';
 import { UsersService } from '../users/users.service';
 import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
 import { ProjectUser } from './entities/project-user.entity';
-import { ProjectUsersResponseAdminDto } from './dto/project-users-response-admin.dto';
 import { ProjectReponseAdminDto } from '../projects/dto/project-reponse-admin.dto';
 @ApiTags('Project-Users')
 @Controller('project-users')

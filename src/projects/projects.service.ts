@@ -194,7 +194,7 @@ export class ProjectsService {
     }
   }
   //A changer
-  findForAdmin(id: string): Promise<Project> {
+  findOneAdmin(id: string): Promise<ProjectResponseDto> {
     try {
       return this.projectsRepository.findOne({ where: { id } });
     } catch (error) {
