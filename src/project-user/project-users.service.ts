@@ -87,11 +87,6 @@ export class ProjectUsersService {
           `${userAssigned.username} already assigned to project on the same date range`,
         );
       }
-      console.log('userProjectsDates');
-      console.log(userProjectsDates);
-      console.log(userProjectsDates);
-      console.log(userProjectsDates);
-      console.log(userProjectsDates);
       if (user.role === 'ProjectManager') {
         const savedProjectUsers: ProjectUser =
           await this.projectUsersRepository.save(projectUsers);
@@ -125,13 +120,15 @@ export class ProjectUsersService {
     userRequest: UserResponseDto,
   ): Promise<ProjectUsersResponseDto[]> {
     try {
+      // should return 200 for user but with only his project-users
       const userRequestId: string = userRequest.id;
-      const usersProjectsAssigned: ProjectUser[] =
+      const usersProjectsAssigned: ProjectUsersResponseDto[] =
         await this.projectUsersRepository.find();
-      const ownUserProjectUser: ProjectUser[] = usersProjectsAssigned.filter(
-        (userProjects: ProjectUser): boolean =>
-          userProjects.userId === userRequestId,
-      );
+      const ownUserProjectUser: ProjectUsersResponseDto[] =
+        usersProjectsAssigned.filter(
+          (userProjects: ProjectUsersResponseDto): boolean =>
+            userProjects.userId === userRequestId,
+        );
       if (ownUserProjectUser[0] === null) {
         throw new ForbiddenException('No project for this user');
       } else {
@@ -141,6 +138,47 @@ export class ProjectUsersService {
       throw error;
     }
   }
+  /*
+  async employeeFindAll(
+    userRequest: UserResponseDto,
+  ): Promise<ProjectUsersResponseDto[]> {
+    try {
+      // should return 200 for user but with only his project-users
+      const userRequestId: string = userRequest.id;
+      const usersProjectsAssigned: ProjectUsersResponseDto[] =
+        await this.projectUsersRepository.find();
+      const ownUserProjectUser: ProjectUsersResponseDto[] =
+        usersProjectsAssigned.filter(
+          (userProjects: ProjectUsersResponseDto): boolean =>
+            userProjects.userId === userRequestId,
+        );
+      //J'ai maintenant la liste des projets assignés à l'utilisateur
+      if (ownUserProjectUser[0] === null) {
+        throw new ForbiddenException('No project for this user');
+      } else {
+        //Je veux ici la liste des projets de l'user + les infos du projet en retour
+        ownUserProjectUser.map(async (projectUser) => {
+          const projectAssigned: ProjectResponseDto =
+            await this.projectsService.findOne(
+              projectUser.projectId,
+              userRequest,
+            );
+          return {
+            id: projectUser.id,
+            startDate: projectUser.startDate,
+            endDate: projectUser.endDate,
+            userId: projectUser.userId,
+            projectId: projectUser.projectId,
+            project: projectAssigned,
+          };
+        });
+        return ownUserProjectUser;
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+   */
   async managerAndAdminfindAll(): Promise<ProjectReponseAdminDto[] | void> {
     try {
       const projectList: ProjectReponseAdminDto[] =

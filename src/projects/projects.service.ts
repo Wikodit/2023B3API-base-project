@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -16,7 +17,6 @@ import { UserResponseDto } from '../users/dto/user-response-dto';
 import { ProjectUsersService } from '../project-user/project-users.service';
 import { ProjectUsersResponseDto } from '../project-user/dto/project-users-response.dto';
 import { ProjectResponseReferringEmployeeDto } from './dto/project-response-referringEmployee.dto';
-import { ProjectUsersResponseAdminDto } from '../project-user/dto/project-users-response-admin.dto';
 import { ProjectReponseAdminDto } from './dto/project-reponse-admin.dto';
 
 @Injectable()
@@ -67,41 +67,6 @@ export class ProjectsService {
       }
     }
   }
-  /*
-  async findAll(): Promise<
-    {
-      referringEmployeeId: string;
-      name: string;
-      referringEmployee: UserResponseDto;
-      id: string;
-    }[]
-  > {
-    try {
-      const projects: ProjectResponseDto[] =
-        await this.projectsRepository.find();
-
-      const projectPromises = projects.map(
-        async (project: ProjectResponseDto) => {
-          const user: UserResponseDto = await this.usersService.findOne(
-            project.referringEmployeeId,
-          );
-          return {
-            id: project.id,
-            name: project.name,
-            referringEmployeeId: project.referringEmployeeId,
-            referringEmployee: user,
-          };
-        },
-      );
-
-      const projectResults = await Promise.all(projectPromises);
-      return projectResults;
-    } catch (error) {
-      throw error;
-    }
-  }
-
- */
   async findAllForAdmin(): Promise<ProjectReponseAdminDto[]> {
     try {
       const projects: Project[] = await this.projectsRepository.find();
@@ -170,22 +135,38 @@ export class ProjectsService {
       throw error;
     }
   }
-  async findProjectsEmployee(user: UserResponseDto) {
+  async findProjectsEmployee(
+    user: UserResponseDto,
+  ): Promise<
+    ProjectResponseReferringEmployeeDto | ProjectResponseReferringEmployeeDto[]
+  > {
     try {
-      const projectUserList =
+      const projectUserList: ProjectUsersResponseDto[] =
         await this.projectUsersService.employeeFindAll(user);
       if (!projectUserList) {
-        return 'PAS DE PROJET';
+        throw new NotFoundException();
       }
-      //const projectIdList: string[] = [];
-      //Je dois récuperer les id des projectsUsers de l'employee
-      //projectUserList.filter((projectUser) => {
-      //projectUser.projectId ?? projectIdList.push(projectUser.projectId);
-      //});
-
-      //Apres je call project afin d'avoir le projectResponseDto des projets de l'user et je
-      //retourne ca
-      return projectUserList;
+      const projectPromises: Promise<ProjectResponseReferringEmployeeDto>[] =
+        [];
+      for (const projectUser of projectUserList) {
+        if (projectUser.userId === user.id) {
+          const project: Project = await this.projectsRepository.findOne({
+            where: { id: projectUser.projectId },
+          });
+          const referringEmployee: UserResponseDto =
+            await this.usersService.findOne(project.referringEmployeeId);
+          const projectDetails: ProjectResponseReferringEmployeeDto = {
+            id: project.id,
+            name: project.name,
+            referringEmployeeId: project.referringEmployeeId,
+            referringEmployee: referringEmployee,
+          };
+          projectPromises.push(Promise.resolve(projectDetails));
+        }
+      }
+      const projectUserArray: ProjectResponseReferringEmployeeDto[] =
+        await Promise.all(projectPromises);
+      return projectUserArray;
     } catch (error) {
       throw new BadRequestException('Something bad happened', {
         cause: new Error(),
@@ -193,7 +174,6 @@ export class ProjectsService {
       });
     }
   }
-  //A changer
   findOneAdmin(id: string): Promise<ProjectResponseDto> {
     try {
       return this.projectsRepository.findOne({ where: { id } });

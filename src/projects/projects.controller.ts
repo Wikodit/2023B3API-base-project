@@ -19,8 +19,7 @@ import { ProjectResponseDto } from './dto/project-response-dto';
 import { ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from '../users/dto/user-response-dto';
 import { UserRoleEnum } from '../users/entities/user.role.enum';
-import { Project } from './entities/project.entity';
-import { ProjectUsersResponseDto } from '../project-user/dto/project-users-response.dto';
+import { ProjectResponseReferringEmployeeDto } from './dto/project-response-referringEmployee.dto';
 
 @Controller('projects')
 @ApiTags('Project')
@@ -59,18 +58,21 @@ export class ProjectsController {
   @Get()
   async findAll(
     @Req() req,
-  ): Promise<CreateProjectDto[] | ProjectUsersResponseDto[]> {
+  ): Promise<
+    ProjectResponseReferringEmployeeDto | ProjectResponseReferringEmployeeDto[]
+  > {
     try {
       const user: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
       const userRole: UserRoleEnum = user.role;
       if (userRole === 'ProjectManager' || userRole === 'Admin') {
-        const projects = await this.projectsService.findAll();
+        const projects: ProjectResponseReferringEmployeeDto[] =
+          await this.projectsService.findAll();
         return projects;
       }
       if (userRole === 'Employee') {
-        //return await this.projectsService.findProjectsEmployee(user);
+        return await this.projectsService.findProjectsEmployee(user);
       }
     } catch (error) {
       throw error;
