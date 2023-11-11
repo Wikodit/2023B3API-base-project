@@ -15,7 +15,6 @@ export class Event {
   })
   public eventStatus?: EventStatusEnum;
   @Column({
-    // NO DEFAULT ?
     type: 'enum',
     enum: EventTypeEnum,
   })
@@ -23,5 +22,5 @@ export class Event {
   @Column()
   public eventDescription?: string;
   @Column()
-  public userId!: string; // uuidv4
+  public userId!: string;
 }

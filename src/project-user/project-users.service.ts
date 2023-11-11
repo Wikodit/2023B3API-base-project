@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   forwardRef,
   Inject,
@@ -9,7 +10,7 @@ import { CreateProjectUsersDto } from './dto/create-project-users.dto';
 import { UpdateProjectUsersDto } from './dto/update-project-users.dto';
 import { ProjectUser } from './entities/project-user.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { UserResponseDto } from '../users/dto/user-response-dto';
 import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
 import { UsersService } from '../users/users.service';
@@ -36,19 +37,61 @@ export class ProjectUsersService {
       const projectUsers: ProjectUser = this.projectUsersRepository.create(
         createProjectUsersDto,
       );
+      //401 If user or project not found
       const userAssigned: UserResponseDto = await this.usersService.findOne(
         projectUsers.userId,
       );
-
       const projectAssigned: ProjectResponseDto =
         await this.projectsService.findOneAdmin(projectUsers.projectId);
 
       if (!projectAssigned || !userAssigned) {
-        throw new NotFoundException("Can't assign project, project not found");
+        throw new NotFoundException('Not found');
       }
       const employeeReferring: UserResponseDto =
         await this.usersService.findOne(projectAssigned.referringEmployeeId);
+      //409 If user already assigned to project on the same date range
+      const userProjects: ProjectUser[] =
+        await this.projectUsersRepository.find({
+          where: { userId: userAssigned.id },
+        });
 
+      const startsDatesUser: Date[] = userProjects.map(
+        (project: ProjectUser) => project.startDate,
+      );
+      const endsDatesUser: Date[] = userProjects.map(
+        (project: ProjectUser) => project.startDate,
+      );
+      const startDate: Date = new Date(projectUsers.startDate);
+      const endDate: Date = new Date(projectUsers.endDate);
+
+      const userNewProjectDates = [
+        { startDate: `${startDate}`, endDate: `${endDate}` },
+      ];
+
+      const userProjectsDates = [
+        { startDate: `${startsDatesUser}`, endDate: `${endsDatesUser}` },
+      ];
+
+      const isAConflictException: boolean = userProjectsDates.some(
+        (project) => {
+          return userNewProjectDates.some((newProject) => {
+            return (
+              newProject.startDate <= project.startDate &&
+              newProject.endDate >= project.endDate
+            );
+          });
+        },
+      );
+      if (isAConflictException) {
+        throw new ConflictException(
+          `${userAssigned.username} already assigned to project on the same date range`,
+        );
+      }
+      console.log('userProjectsDates');
+      console.log(userProjectsDates);
+      console.log(userProjectsDates);
+      console.log(userProjectsDates);
+      console.log(userProjectsDates);
       if (user.role === 'ProjectManager') {
         const savedProjectUsers: ProjectUser =
           await this.projectUsersRepository.save(projectUsers);
@@ -142,34 +185,20 @@ export class ProjectUsersService {
     }
   }
 
-  async findDatesByUserId(
-    userId: string,
-  ): Promise<SelectQueryBuilder<ProjectUser>> {
-    const listDates = this.dataSource
-      .createQueryBuilder()
-      .select('projectUser.startDate')
-      .from(ProjectUser, 'projectUser')
-      .where(`projectUser.userId = ${userId}`);
+  async findAllDateByAnUser(user: UserResponseDto): Promise<ProjectUser[]> {
+    //const userDates = [];
+    const userProjects: ProjectUser[] = await this.projectUsersRepository.find({
+      where: { userId: user.id },
+    });
+    console.log('userProjects');
+    console.log(userProjects);
+    console.log(userProjects.map((project) => project.startDate));
+    console.log(userProjects.map((project) => project.endDate));
 
-    /*
-    const query = `
-      SELECT pu.startDate
-      FROM project_user pu
-      JOIN project p ON p.id = pu.project_id
-      WHERE pu.user_id = $1
-    `;
-    const dates = listDates.map(
-      (result: { startDate: Date }) => result.startDate,
-    );
- */
-
-    //const results = await this.dataSource.query(listDates);
-
-    // Extract dates from results
-
-    return listDates;
+    console.log(userProjects);
+    console.log(userProjects);
+    return userProjects;
   }
-
   update(id: number, updateProjectUsersDto: UpdateProjectUsersDto) {
     return `This action updates a #${id} projectUser`;
   }

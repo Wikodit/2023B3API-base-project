@@ -1,8 +1,6 @@
 import { Entity } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../../users/entities/user.entity';
-import { Project } from '../../projects/entities/project.entity';
 
 @Entity()
 export class CreateProjectUsersDto {

@@ -18,7 +18,6 @@ import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { EventResponseDto } from './dto/event-response.dto';
 import { UsersService } from '../users/users.service';
 import { UserResponseDto } from '../users/dto/user-response-dto';
-import { getISOWeek } from 'date-fns';
 import { EventTypeEnum } from './entities/event.type.enum';
 
 @Controller('events')
@@ -32,7 +31,6 @@ export class EventsController {
 
   @Post()
   @ApiOperation({ summary: 'Create an event' })
-  //@ApiResponse({ status: HttpStatus.OK, type: EventResponseDto })
   async create(
     @Req() req,
     @Body() createEventDto: CreateEventDto,
@@ -69,7 +67,6 @@ export class EventsController {
           return event.userId === user.id && eventDate === newEventDate;
         },
       );
-
       if (hasTwoEventOnSameDay) {
         throw new UnauthorizedException(
           'User already has an event on the same day',
@@ -84,7 +81,6 @@ export class EventsController {
       throw error;
     }
   }
-
   @Get()
   @ApiOperation({ summary: 'Find all events' })
   //@ApiResponse({ status: HttpStatus.OK, type: EventResponseDto })
@@ -95,11 +91,9 @@ export class EventsController {
       throw error;
     }
   }
-
   @Get(':id')
   @ApiOperation({ summary: 'Find a selected event' })
   @ApiParam({ name: 'id', type: String, description: 'Event ID' })
-  //@ApiResponse({ status: HttpStatus.OK, type: EventResponseDto })
   async findOne(@Param('id') id: string): Promise<EventResponseDto> {
     try {
       return this.eventsService.findOne(id);
@@ -107,12 +101,10 @@ export class EventsController {
       throw error;
     }
   }
-
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
     return this.eventsService.update(+id, updateEventDto);
   }
-
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.eventsService.remove(+id);

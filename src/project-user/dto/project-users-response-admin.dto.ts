@@ -1,4 +1,3 @@
-import { Project } from '../../projects/entities/project.entity';
 import { UserResponseDto } from '../../users/dto/user-response-dto';
 import { ProjectResponseDto } from '../../projects/dto/project-response-dto';
 

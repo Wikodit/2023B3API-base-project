@@ -23,17 +23,9 @@ export class EventsService {
       eventDescription: createEventDto.eventDescription,
       date: createEventDto.date,
     });
-    console.log('USER');
-    console.log(user);
-    console.log(eventCreate.userId);
-    console.log('EVENT CREATED  ');
-    console.log(eventCreate);
     const savedEvent: Event = await this.eventsRepository.save(eventCreate);
-    console.log('SAVED EVENT  ');
-    console.log(savedEvent);
     return savedEvent;
   }
-
   async findAll(): Promise<EventResponseDto[]> {
     try {
       return await this.eventsRepository.find();
@@ -41,7 +33,6 @@ export class EventsService {
       throw error;
     }
   }
-
   async findOne(id: string): Promise<EventResponseDto> {
     try {
       return await this.eventsRepository.findOne({ where: { id } });
@@ -49,11 +40,9 @@ export class EventsService {
       throw error;
     }
   }
-
   update(id: number, updateEventDto: UpdateEventDto) {
     return `This action updates a #${id} event`;
   }
-
   remove(id: number) {
     return `This action removes a #${id} event`;
   }
