@@ -17,7 +17,8 @@ import { ProjectsService } from '../projects/projects.service';
 import { ProjectResponseDto } from '../projects/dto/project-response-dto';
 import { CreateProjectDto } from '../projects/dto/create-project.dto';
 import { ProjectUsersResponseAdminDto } from './dto/project-users-response-admin.dto';
-
+import { Project } from '../projects/entities/project.entity';
+import { ProjectReponseAdminDto } from '../projects/dto/project-reponse-admin.dto';
 @Injectable()
 export class ProjectUsersService {
   constructor(
@@ -41,8 +42,8 @@ export class ProjectUsersService {
       const datesProjects = await this.findDatesByUserId(
         createProjectUsersDto.userId,
       );
-      console.log('DATES');
-      console.log(datesProjects);
+      //console.log('DATES');
+      //console.log(datesProjects);
       if (user.role === 'ProjectManager') {
         const savedProjectUsers: ProjectUser =
           await this.projectUsersRepository.save(projectUsers);
@@ -51,7 +52,7 @@ export class ProjectUsersService {
           throw new NotFoundException("Can't assign project, user not found");
         }
 
-        console.log(savedProjectUsers.userId);
+        //console.log(savedProjectUsers.userId);
         return savedProjectUsers;
       }
       if (user.role === 'Admin') {
@@ -89,38 +90,52 @@ export class ProjectUsersService {
     }
   }
 
-  async findAll(
+  async employeeFindAll(
     userRequest: UserResponseDto,
-  ): Promise<CreateProjectDto[] | ProjectUsersResponseDto[]> {
+  ): Promise<ProjectUsersResponseDto[]> {
     try {
-      const userRole: string = userRequest.role;
-      if (userRole === 'Admin' || userRole === 'ProjectManager') {
-        const projectList = await this.projectsService.findAll();
-        const projectResponse = projectList.map((project) => {
-          return {
-            id: project.id,
-            name: project.name,
-            referringEmployeeId: project.referringEmployeeId,
-          };
-        });
-        return projectResponse;
+      const userRequestId: string = userRequest.id;
+      const usersProjectsAssigned: ProjectUser[] =
+        await this.projectUsersRepository.find();
+      const ownUserProjectUser: ProjectUser[] = usersProjectsAssigned.filter(
+        (userProjects: ProjectUser): boolean =>
+          userProjects.userId === userRequestId,
+      );
+      if (ownUserProjectUser[0] === null) {
+        throw new ForbiddenException('No project for this user');
+      } else {
+        return ownUserProjectUser;
       }
-
-      if (userRole === 'Employee') {
-        const userRequestId: string = userRequest.id;
-        const usersProjectsAssigned: ProjectUser[] =
-          await this.projectUsersRepository.find();
-
-        const ownUserProjectUser: ProjectUser[] = usersProjectsAssigned.filter(
-          (userProjects: ProjectUser): boolean =>
-            userProjects.userId === userRequestId,
-        );
-        if (ownUserProjectUser[0] === null) {
-          throw new ForbiddenException('No project for this user');
-        } else {
-          return ownUserProjectUser;
-        }
-      }
+    } catch (error) {
+      throw error;
+    }
+  }
+  async managerAndAdminfindAll(): Promise<ProjectReponseAdminDto[] | void> {
+    try {
+      const projectList = await this.projectsService.findAllForAdmin();
+      return projectList;
+      // const userRole: string = userRequest.role;
+      /*
+    TYPE ATTENDU :
+         type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: {
+                      type: 'string',
+                    },
+                    name: {
+                      type: 'string',
+                    },
+                    referringEmployeeId: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['name', 'id', 'referringEmployeeId'],
+                  additionalProperties: false,
+                },
+              });
+         */
     } catch (error) {
       throw error;
     }

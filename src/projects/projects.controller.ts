@@ -1,14 +1,14 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  Req,
+  Get,
   Inject,
   NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Req,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
@@ -20,6 +20,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from '../users/dto/user-response-dto';
 import { UserRoleEnum } from '../users/entities/user.role.enum';
 import { Project } from './entities/project.entity';
+import { ProjectUsersResponseDto } from '../project-user/dto/project-users-response.dto';
 
 @Controller('projects')
 @ApiTags('Project')
@@ -56,7 +57,9 @@ export class ProjectsController {
   }
 
   @Get()
-  async findAll(@Req() req): Promise<ProjectResponseDto[] | string> {
+  async findAll(
+    @Req() req,
+  ): Promise<CreateProjectDto[] | ProjectUsersResponseDto[]> {
     try {
       const user: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
@@ -67,8 +70,7 @@ export class ProjectsController {
         return projects;
       }
       if (userRole === 'Employee') {
-        console.log(`${userRole} + ${typeof userRole}`);
-        return 'TODO'; //Et enlever retour string
+        //return await this.projectsService.findProjectsEmployee(user);
       }
     } catch (error) {
       throw error;

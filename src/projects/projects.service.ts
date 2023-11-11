@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   UnauthorizedException,
@@ -13,6 +14,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ProjectResponseDto } from './dto/project-response-dto';
 import { UserResponseDto } from '../users/dto/user-response-dto';
 import { ProjectUsersService } from '../project-user/project-users.service';
+import { ProjectUsersResponseDto } from '../project-user/dto/project-users-response.dto';
+import { ProjectResponseReferringEmployeeDto } from './dto/project-response-referringEmployee.dto';
+import { ProjectUsersResponseAdminDto } from '../project-user/dto/project-users-response-admin.dto';
+import { ProjectReponseAdminDto } from './dto/project-reponse-admin.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -62,6 +67,7 @@ export class ProjectsService {
       }
     }
   }
+  /*
   async findAll(): Promise<
     {
       referringEmployeeId: string;
@@ -89,29 +95,97 @@ export class ProjectsService {
       );
 
       const projectResults = await Promise.all(projectPromises);
-
       return projectResults;
-      /*
-      projects.map((project) => {
-        const referringEmployee: UserResponseDto =
-          await this.usersService.findOne(project.referringEmployeeId);
-        project.add(referringEmployee);
-      });
-      return projects;
-       */
     } catch (error) {
       throw error;
     }
   }
 
-  findOne(id: string, user: UserResponseDto): Promise<Project> {
+ */
+  async findAllForAdmin(): Promise<ProjectReponseAdminDto[]> {
     try {
-      if (user.role !== 'Employee') {
-        return this.projectsRepository.findOne({ where: { id } });
-      } else {
-        //const projectUsersList = this.projectUsersService.findAll(); //Plutot findOne ?
-        //console.error(projectUsersList);
+      const projects: Project[] = await this.projectsRepository.find();
+      const mappedProjects: ProjectReponseAdminDto[] = projects.map(
+        (project: Project) => {
+          return {
+            id: project.id,
+            name: project.name,
+            referringEmployeeId: project.referringEmployeeId,
+          };
+        },
+      );
+      return mappedProjects;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findAll(): Promise<ProjectResponseReferringEmployeeDto[]> {
+    try {
+      const projects: ProjectResponseDto[] =
+        await this.projectsRepository.find();
+
+      const projectPromises: Promise<ProjectResponseReferringEmployeeDto>[] =
+        projects.map(async (project: ProjectResponseDto) => {
+          const user: UserResponseDto = await this.usersService.findOne(
+            project.referringEmployeeId,
+          );
+          return {
+            id: project.id,
+            name: project.name,
+            referringEmployeeId: project.referringEmployeeId,
+            referringEmployee: user,
+          };
+        });
+
+      const projectResults: ProjectResponseReferringEmployeeDto[] =
+        await Promise.all(projectPromises);
+      return projectResults;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findOne(id: string, user: UserResponseDto): Promise<Project> {
+    try {
+      if (user.role === 'Admin' || user.role === 'ProjectManager') {
+        return await this.projectsRepository.findOne({ where: { id } });
       }
+      if (user.role === 'Employee') {
+        const projectUsers: ProjectUsersResponseDto[] =
+          await this.projectUsersService.employeeFindAll(user);
+        const arrayProjectId: string[] = [];
+        projectUsers.map((projectUser: ProjectUsersResponseDto) => {
+          arrayProjectId.push(projectUser.projectId);
+        });
+        for (const projectId of arrayProjectId) {
+          if (projectId === id) {
+            return this.projectsRepository.findOne({ where: { id } });
+          }
+        }
+        throw new ForbiddenException('Project not found');
+      }
+      throw new ForbiddenException('Project not found');
+    } catch (error) {
+      throw error;
+    }
+  }
+  async findProjectsEmployee(user: UserResponseDto) {
+    try {
+      const projectUserList =
+        await this.projectUsersService.employeeFindAll(user);
+      if (!projectUserList) {
+        return 'PAS DE PROJET';
+      }
+      //const projectIdList: string[] = [];
+      //Je dois récuperer les id des projectsUsers de l'employee
+      //projectUserList.filter((projectUser) => {
+      //projectUser.projectId ?? projectIdList.push(projectUser.projectId);
+      //});
+
+      //Apres je call project afin d'avoir le projectResponseDto des projets de l'user et je
+      //retourne ca
+      return projectUserList;
     } catch (error) {
       throw new BadRequestException('Something bad happened', {
         cause: new Error(),

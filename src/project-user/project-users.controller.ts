@@ -19,7 +19,8 @@ import { UserRoleEnum } from '../users/entities/user.role.enum';
 import { UsersService } from '../users/users.service';
 import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
 import { ProjectUser } from './entities/project-user.entity';
-import { User } from '../users/entities/user.entity';
+import { ProjectUsersResponseAdminDto } from './dto/project-users-response-admin.dto';
+import { ProjectReponseAdminDto } from '../projects/dto/project-reponse-admin.dto';
 @ApiTags('Project-Users')
 @Controller('project-users')
 export class ProjectUsersController {
@@ -50,22 +51,38 @@ export class ProjectUsersController {
   }
 
   @Get()
-  async findAll(@Req() req) {
+  async findAll(
+    @Req() req,
+  ): Promise<ProjectReponseAdminDto[] | ProjectUsersResponseDto[]> {
     try {
       const userRequest: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
-
-      const projectUser = await this.projectUsersService.findAll(userRequest);
-      if (!projectUser) {
-        throw new NotFoundException('ProjectUser not found');
+      const userRole: string = userRequest.role;
+      if (userRole === 'Admin' || userRole === 'ProjectManager') {
+        const projectUser =
+          await this.projectUsersService.managerAndAdminfindAll();
+        if (!projectUser) {
+          throw new NotFoundException('ProjectUser not found');
+        }
+        return projectUser;
       }
-      return projectUser;
+      if (userRole === 'Employee') {
+        const projectUser =
+          await this.projectUsersService.employeeFindAll(userRequest);
+        if (!projectUser) {
+          throw new NotFoundException('ProjectUser not found');
+        }
+        return projectUser;
+      }
     } catch (error) {}
   }
 
   @Get(':id')
-  async findOne(@Req() req, @Param('id') id: string) {
+  async findOne(
+    @Req() req,
+    @Param('id') id: string,
+  ): Promise<ProjectUsersResponseDto> {
     try {
       const user: UserResponseDto = await this.usersService.findOne(
         req.user.sub,

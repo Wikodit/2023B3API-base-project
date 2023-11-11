@@ -24,7 +24,7 @@ export class ProjectUser {
   //@JoinColumn({ name: 'projectId' })
   @Column()
   @ManyToOne(() => Project, (project) => project.projectUser, {
-    onDelete: 'CASCADE',
+    onDelete: 'SET NULL',
   })
   projectId: string;
 }
