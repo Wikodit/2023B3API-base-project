@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  HttpStatus,
   NotFoundException,
   Inject,
   Req,
@@ -15,10 +14,12 @@ import {
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { EventResponseDto } from './dto/event-response.dto';
 import { UsersService } from '../users/users.service';
 import { UserResponseDto } from '../users/dto/user-response-dto';
+import { getISOWeek } from 'date-fns';
+import { EventTypeEnum } from './entities/event.type.enum';
 
 @Controller('events')
 @ApiTags('Events')
@@ -44,16 +45,32 @@ export class EventsController {
         throw new NotFoundException('Unidentified User');
       }
       const eventsList: EventResponseDto[] = await this.eventsService.findAll();
-      const hasEventOnSameDay: boolean = eventsList.some(
+      // 401 because of 3 TT in the same week
+      const userAllEvents: EventResponseDto[] = eventsList.filter(
         (event: EventResponseDto) => {
-          const eventDate: string = new Date(event.date).toDateString();
-          const newEventDate: string = new Date(
-            createEventDto.date,
-          ).toDateString();
+          return event.userId === user.id;
+        },
+      );
+      const userRemoteWorkEvents: EventResponseDto[] = userAllEvents.filter(
+        (event: EventResponseDto) => {
+          return event.eventType === EventTypeEnum.RemoteWork;
+        },
+      );
+      if (userRemoteWorkEvents.length >= 2) {
+        throw new UnauthorizedException(
+          'User has already 2 days of RemoteWork',
+        );
+      }
+      //401 because of 2 event the same day
+      const hasTwoEventOnSameDay = eventsList.some(
+        (event: EventResponseDto) => {
+          const eventDate = new Date(event.date).toDateString();
+          const newEventDate = new Date(createEventDto.date).toDateString();
           return event.userId === user.id && eventDate === newEventDate;
         },
       );
-      if (hasEventOnSameDay) {
+
+      if (hasTwoEventOnSameDay) {
         throw new UnauthorizedException(
           'User already has an event on the same day',
         );
