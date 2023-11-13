@@ -67,6 +67,7 @@ export class ProjectUsersController {
         return projectUser;
       }
       if (userRole === 'Employee') {
+        //Remplacer par employeeFindAllOwnProjectsWithDetails
         const projectUser =
           await this.projectUsersService.employeeFindAll(userRequest);
         if (!projectUser) {

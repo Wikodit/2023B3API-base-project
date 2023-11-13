@@ -9,8 +9,8 @@ import {
 import { CreateProjectUsersDto } from './dto/create-project-users.dto';
 import { UpdateProjectUsersDto } from './dto/update-project-users.dto';
 import { ProjectUser } from './entities/project-user.entity';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { UserResponseDto } from '../users/dto/user-response-dto';
 import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
 import { UsersService } from '../users/users.service';
@@ -26,24 +26,22 @@ export class ProjectUsersService {
     @Inject(UsersService)
     public usersService: UsersService,
     @Inject(forwardRef(() => ProjectsService))
-    public projectsService: ProjectsService,
-    @InjectDataSource() private dataSource: DataSource,
+    public projectsService: ProjectsService, //@InjectDataSource() private dataSource: DataSource,
   ) {}
   async create(
     createProjectUsersDto: CreateProjectUsersDto,
     user: UserResponseDto,
   ): Promise<ProjectUser | ProjectUsersResponseAdminDto> {
     try {
-      const projectUsers: ProjectUser = this.projectUsersRepository.create(
+      const projectUser: ProjectUser = this.projectUsersRepository.create(
         createProjectUsersDto,
       );
       //401 If user or project not found
       const userAssigned: UserResponseDto = await this.usersService.findOne(
-        projectUsers.userId,
+        projectUser.userId,
       );
       const projectAssigned: ProjectResponseDto =
-        await this.projectsService.findOneAdmin(projectUsers.projectId);
-
+        await this.projectsService.findOneAdmin(projectUser.projectId);
       if (!projectAssigned || !userAssigned) {
         throw new NotFoundException('Not found');
       }
@@ -55,46 +53,37 @@ export class ProjectUsersService {
           where: { userId: userAssigned.id },
         });
 
-      const startsDatesUser: Date[] = userProjects.map(
-        (project: ProjectUser) => project.startDate,
-      );
-      const endsDatesUser: Date[] = userProjects.map(
-        (project: ProjectUser) => project.startDate,
-      );
-      const startDate: Date = new Date(projectUsers.startDate);
-      const endDate: Date = new Date(projectUsers.endDate);
+      const startDateNewPro = new Date(projectUser.startDate).getTime();
+      const endDateNewPro = new Date(projectUser.endDate).getTime();
 
-      const userNewProjectDates = [
-        { startDate: `${startDate}`, endDate: `${endDate}` },
-      ];
-
-      const userProjectsDates = [
-        { startDate: `${startsDatesUser}`, endDate: `${endsDatesUser}` },
-      ];
-
-      const isAConflictException: boolean = userProjectsDates.some(
-        (project) => {
-          return userNewProjectDates.some((newProject) => {
-            return (
-              newProject.startDate <= project.startDate &&
-              newProject.endDate >= project.endDate
-            );
-          });
-        },
-      );
-      if (isAConflictException) {
-        throw new ConflictException(
-          `${userAssigned.username} already assigned to project on the same date range`,
-        );
-      }
+      userProjects.forEach((project: ProjectUser) => {
+        const userProjectDate = {
+          startDate: `${project.startDate.getTime()}`,
+          endDate: `${project.endDate.getTime()}`,
+        };
+        if (
+          (startDateNewPro <= parseInt(userProjectDate.startDate) &&
+            endDateNewPro >= parseInt(userProjectDate.endDate)) ||
+          (startDateNewPro >= parseInt(userProjectDate.startDate) &&
+            endDateNewPro <= parseInt(userProjectDate.endDate)) ||
+          (startDateNewPro <= parseInt(userProjectDate.startDate) &&
+            endDateNewPro >= parseInt(userProjectDate.startDate)) ||
+          (startDateNewPro <= parseInt(userProjectDate.endDate) &&
+            endDateNewPro >= parseInt(userProjectDate.endDate))
+        ) {
+          throw new ConflictException(
+            `${userAssigned.username} already assigned to project on the same date range`,
+          );
+        }
+      });
       if (user.role === 'ProjectManager') {
         const savedProjectUsers: ProjectUser =
-          await this.projectUsersRepository.save(projectUsers);
+          await this.projectUsersRepository.save(projectUser);
         return savedProjectUsers;
       }
       if (user.role === 'Admin') {
         const savedProjectUsers: ProjectUser =
-          await this.projectUsersRepository.save(projectUsers);
+          await this.projectUsersRepository.save(projectUser);
         const adminResponse: ProjectUsersResponseAdminDto = {
           id: savedProjectUsers.id,
           startDate: savedProjectUsers.startDate,
@@ -115,70 +104,25 @@ export class ProjectUsersService {
       throw error;
     }
   }
-
   async employeeFindAll(
     userRequest: UserResponseDto,
   ): Promise<ProjectUsersResponseDto[]> {
     try {
-      // should return 200 for user but with only his project-users
       const userRequestId: string = userRequest.id;
       const usersProjectsAssigned: ProjectUsersResponseDto[] =
-        await this.projectUsersRepository.find();
-      const ownUserProjectUser: ProjectUsersResponseDto[] =
-        usersProjectsAssigned.filter(
-          (userProjects: ProjectUsersResponseDto): boolean =>
-            userProjects.userId === userRequestId,
-        );
-      if (ownUserProjectUser[0] === null) {
-        throw new ForbiddenException('No project for this user');
-      } else {
-        return ownUserProjectUser;
-      }
-    } catch (error) {
-      throw error;
-    }
-  }
-  /*
-  async employeeFindAll(
-    userRequest: UserResponseDto,
-  ): Promise<ProjectUsersResponseDto[]> {
-    try {
-      // should return 200 for user but with only his project-users
-      const userRequestId: string = userRequest.id;
-      const usersProjectsAssigned: ProjectUsersResponseDto[] =
-        await this.projectUsersRepository.find();
-      const ownUserProjectUser: ProjectUsersResponseDto[] =
-        usersProjectsAssigned.filter(
-          (userProjects: ProjectUsersResponseDto): boolean =>
-            userProjects.userId === userRequestId,
-        );
-      //J'ai maintenant la liste des projets assignés à l'utilisateur
-      if (ownUserProjectUser[0] === null) {
-        throw new ForbiddenException('No project for this user');
-      } else {
-        //Je veux ici la liste des projets de l'user + les infos du projet en retour
-        ownUserProjectUser.map(async (projectUser) => {
-          const projectAssigned: ProjectResponseDto =
-            await this.projectsService.findOne(
-              projectUser.projectId,
-              userRequest,
-            );
-          return {
-            id: projectUser.id,
-            startDate: projectUser.startDate,
-            endDate: projectUser.endDate,
-            userId: projectUser.userId,
-            projectId: projectUser.projectId,
-            project: projectAssigned,
-          };
+        await this.projectUsersRepository.find({
+          where: { userId: userRequestId },
         });
-        return ownUserProjectUser;
+      if (usersProjectsAssigned[0] === null) {
+        throw new ForbiddenException('No project for this user');
+      } else {
+        return usersProjectsAssigned;
       }
     } catch (error) {
       throw error;
     }
   }
-   */
+
   async managerAndAdminfindAll(): Promise<ProjectReponseAdminDto[] | void> {
     try {
       const projectList: ProjectReponseAdminDto[] =
@@ -223,20 +167,6 @@ export class ProjectUsersService {
     }
   }
 
-  async findAllDateByAnUser(user: UserResponseDto): Promise<ProjectUser[]> {
-    //const userDates = [];
-    const userProjects: ProjectUser[] = await this.projectUsersRepository.find({
-      where: { userId: user.id },
-    });
-    console.log('userProjects');
-    console.log(userProjects);
-    console.log(userProjects.map((project) => project.startDate));
-    console.log(userProjects.map((project) => project.endDate));
-
-    console.log(userProjects);
-    console.log(userProjects);
-    return userProjects;
-  }
   update(id: number, updateProjectUsersDto: UpdateProjectUsersDto) {
     return `This action updates a #${id} projectUser`;
   }

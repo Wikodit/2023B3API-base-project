@@ -101,6 +101,64 @@ export class EventsController {
       throw error;
     }
   }
+  /*
+  Il est impossible d'altérer le statut d'un projet déjà validé ou refusé
+  Les administrateurs peuvent valider n'importe quelle demande
+  Il n'est possible de traiter un évènement que si l'utilisateur est
+      rattaché à un projet le jour de l'évènement
+  Les chefs de projet peuvent valider ou refuser un évènement que si
+      l'utilisateur est rattaché à un projet où le chef est référent
+      pour la date de l'évènement.
+   */
+  @Get(':id/validate')
+  @ApiOperation({ summary: 'Validation' })
+  async validateOne(
+    @Param('id') id: string,
+    @Req() req,
+  ): Promise<EventResponseDto> {
+    try {
+      console.log('Coucou');
+      console.log('Coucou');
+      console.log('Coucou');
+      console.log('Coucou');
+      console.log('Coucou');
+      console.log('Coucou');
+      console.log('Coucou');
+      const user: UserResponseDto = await this.usersService.findOne(
+        req.user.sub,
+      );
+      if (user.role === 'Employee') {
+        throw new UnauthorizedException(
+          'User is not allowed to see this event',
+        );
+      }
+      const eventToValid = await this.eventsService.acceptOne(id);
+      return eventToValid;
+    } catch (error) {
+      throw error;
+    }
+  }
+  @Get(':id/decline')
+  @ApiOperation({ summary: 'Validation' })
+  async declineOne(
+    @Param('id') id: string,
+    @Req() req,
+  ): Promise<EventResponseDto> {
+    try {
+      const user: UserResponseDto = await this.usersService.findOne(
+        req.user.sub,
+      );
+      if (user.role === 'Employee') {
+        throw new UnauthorizedException(
+          'User is not allowed to see this event',
+        );
+      }
+      const eventToReject = await this.eventsService.rejectOne(id);
+      return eventToReject;
+    } catch (error) {
+      throw error;
+    }
+  }
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
     return this.eventsService.update(+id, updateEventDto);

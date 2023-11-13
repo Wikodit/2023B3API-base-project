@@ -5,6 +5,7 @@ import { EventResponseDto } from './dto/event-response.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
+import { EventStatusEnum } from './entities/event.status.enum';
 
 @Injectable()
 export class EventsService {
@@ -36,6 +37,49 @@ export class EventsService {
   async findOne(id: string): Promise<EventResponseDto> {
     try {
       return await this.eventsRepository.findOne({ where: { id } });
+    } catch (error) {
+      throw error;
+    }
+  }
+  async acceptOne(id: string) {
+    try {
+      const eventToValid = await this.eventsRepository.findOne({
+        where: { id },
+      });
+      if (
+        eventToValid.eventStatus === 'Accepted' ||
+        eventToValid.eventStatus === 'Declined'
+      ) {
+        throw new Error('Event already accepted or declined');
+      } else {
+        eventToValid.eventStatus = EventStatusEnum.Declined;
+        console.log('eventToValid');
+        console.log(eventToValid);
+        console.log(eventToValid);
+        console.log(eventToValid);
+        console.log(eventToValid);
+        await this.eventsRepository.save(eventToValid);
+      }
+      return eventToValid;
+    } catch (error) {
+      throw error;
+    }
+  }
+  async rejectOne(id: string) {
+    try {
+      const eventToReject = await this.eventsRepository.findOne({
+        where: { id },
+      });
+      if (
+        eventToReject.eventStatus === 'Accepted' ||
+        eventToReject.eventStatus === 'Declined'
+      ) {
+        throw new Error('Event already accepted or declined');
+      } else {
+        eventToReject.eventStatus = EventStatusEnum.Declined;
+        await this.eventsRepository.save(eventToReject);
+      }
+      return eventToReject;
     } catch (error) {
       throw error;
     }
