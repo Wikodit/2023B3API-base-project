@@ -19,7 +19,7 @@ import { UserRoleEnum } from '../users/entities/types/user.role.enum';
 import { UsersService } from '../users/users.service';
 import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
 import { ProjectUser } from './entities/project-user.entity';
-import { ProjectReponseSimpleDto } from '../projects/dto/project-reponse-simple.dto';
+import { ProjectReponsePartialDto } from '../projects/dto/project-reponse-partial.dto';
 @ApiTags('Project-Users')
 @Controller('project-users')
 export class ProjectUsersController {
@@ -50,14 +50,14 @@ export class ProjectUsersController {
   }
 
   @Get()
-  async findAll(@Req() req): Promise<ProjectReponseSimpleDto[]> {
+  async findAll(@Req() req): Promise<ProjectReponsePartialDto[]> {
     try {
       const userRequest: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
       const userRole: string = userRequest.role;
       if (userRole === 'Admin' || userRole === 'ProjectManager') {
-        const projectUser: void | ProjectReponseSimpleDto[] =
+        const projectUser: void | ProjectReponsePartialDto[] =
           await this.projectUsersService.managerAndAdminfindAll();
         if (!projectUser) {
           throw new NotFoundException('ProjectUser not found');
@@ -65,7 +65,7 @@ export class ProjectUsersController {
         return projectUser;
       }
       if (userRole === 'Employee') {
-        const projectUser: ProjectReponseSimpleDto[] =
+        const projectUser: ProjectReponsePartialDto[] =
           await this.projectUsersService.employeeFindAllOwnProjects(
             userRequest,
           );

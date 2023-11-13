@@ -17,7 +17,7 @@ import { UsersService } from '../users/users.service';
 import { ProjectsService } from '../projects/projects.service';
 import { ProjectResponseDto } from '../projects/dto/project-response-dto';
 import { ProjectUsersResponseAdminDto } from './dto/project-users-response-admin.dto';
-import { ProjectReponseSimpleDto } from '../projects/dto/project-reponse-simple.dto';
+import { ProjectReponsePartialDto } from '../projects/dto/project-reponse-partial.dto';
 
 @Injectable()
 export class ProjectUsersService {
@@ -40,7 +40,7 @@ export class ProjectUsersService {
       const userAssigned: UserResponseDto = await this.usersService.findOne(
         projectUser.userId,
       );
-      const projectAssigned: ProjectReponseSimpleDto =
+      const projectAssigned: ProjectReponsePartialDto =
         await this.projectsService.findOneAdmin(projectUser.projectId);
       if (!projectAssigned || !userAssigned) {
         throw new NotFoundException('Not found');
@@ -128,7 +128,7 @@ export class ProjectUsersService {
   }
   async employeeFindAllOwnProjects(
     userRequest: UserResponseDto,
-  ): Promise<ProjectReponseSimpleDto[]> {
+  ): Promise<ProjectReponsePartialDto[]> {
     try {
       const userRequestId: string = userRequest.id;
       const usersProjectsAssigned: ProjectUsersResponseDto[] =
@@ -138,9 +138,9 @@ export class ProjectUsersService {
       if (usersProjectsAssigned[0] === null) {
         throw new ForbiddenException('No project for this user');
       } else {
-        const projectOwnUserArr: ProjectReponseSimpleDto[] = [];
+        const projectOwnUserArr: ProjectReponsePartialDto[] = [];
         for (const projectUser of usersProjectsAssigned) {
-          const projectOwnUser: ProjectReponseSimpleDto =
+          const projectOwnUser: ProjectReponsePartialDto =
             await this.projectsService.findOne(
               projectUser.projectId,
               userRequest,
@@ -157,9 +157,9 @@ export class ProjectUsersService {
       throw error;
     }
   }
-  async managerAndAdminfindAll(): Promise<ProjectReponseSimpleDto[] | void> {
+  async managerAndAdminfindAll(): Promise<ProjectReponsePartialDto[] | void> {
     try {
-      const projectList: ProjectReponseSimpleDto[] =
+      const projectList: ProjectReponsePartialDto[] =
         await this.projectsService.findAllForAdmin();
       return projectList;
     } catch (error) {

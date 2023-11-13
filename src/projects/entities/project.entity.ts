@@ -15,9 +15,9 @@ export class Project {
   public id!: string;
   @Column()
   public name!: string;
-  @IsOptional()
-  @Column({ nullable: true })
-  public description?: string | null;
+  //@IsOptional()
+  //@Column({ nullable: true })
+  //public description?: string | null;
   @Column()
   @ManyToOne(() => User, (user: User) => user.employeeReferring, {
     onDelete: 'SET NULL',

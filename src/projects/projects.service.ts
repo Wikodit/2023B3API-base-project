@@ -16,8 +16,7 @@ import { ProjectResponseDto } from './dto/project-response-dto';
 import { UserResponseDto } from '../users/dto/user-response-dto';
 import { ProjectUsersService } from '../project-user/project-users.service';
 import { ProjectUsersResponseDto } from '../project-user/dto/project-users-response.dto';
-import { ProjectResponseReferringEmployeeDto } from './dto/project-response-referringEmployee.dto';
-import { ProjectReponseSimpleDto } from './dto/project-reponse-simple.dto';
+import { ProjectReponsePartialDto } from './dto/project-reponse-partial.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -48,12 +47,10 @@ export class ProjectsService {
         if (referringEmployee.role === 'Employee') {
           throw new UnauthorizedException("Employee can't manage a project.");
         } else {
-          const savedProject: ProjectResponseDto =
+          const savedProject: ProjectReponsePartialDto =
             await this.projectsRepository.save(project);
           return {
-            id: savedProject.id,
-            name: savedProject.name,
-            referringEmployeeId: referringEmployeeId,
+            ...savedProject,
             referringEmployee: referringEmployee,
           };
         }
@@ -66,15 +63,13 @@ export class ProjectsService {
       }
     }
   }
-  async findAllForAdmin(): Promise<ProjectReponseSimpleDto[]> {
+  async findAllForAdmin(): Promise<ProjectReponsePartialDto[]> {
     try {
       const projects: Project[] = await this.projectsRepository.find();
-      const mappedProjects: ProjectReponseSimpleDto[] = projects.map(
-        (project: Project) => {
+      const mappedProjects: ProjectReponsePartialDto[] = projects.map(
+        (project: ProjectResponseDto) => {
           return {
-            id: project.id,
-            name: project.name,
-            referringEmployeeId: project.referringEmployeeId,
+            ...project,
           };
         },
       );
@@ -84,25 +79,24 @@ export class ProjectsService {
     }
   }
 
-  async findAll(): Promise<ProjectResponseReferringEmployeeDto[]> {
+  async findAll(): Promise<ProjectResponseDto[]> {
     try {
       const projects: ProjectResponseDto[] =
         await this.projectsRepository.find();
 
-      const projectPromises: Promise<ProjectResponseReferringEmployeeDto>[] =
-        projects.map(async (project: ProjectResponseDto) => {
+      const projectPromises: Promise<ProjectResponseDto>[] = projects.map(
+        async (project: ProjectResponseDto) => {
           const user: UserResponseDto = await this.usersService.findOne(
             project.referringEmployeeId,
           );
           return {
-            id: project.id,
-            name: project.name,
-            referringEmployeeId: project.referringEmployeeId,
+            ...project,
             referringEmployee: user,
           };
-        });
+        },
+      );
 
-      const projectResults: ProjectResponseReferringEmployeeDto[] =
+      const projectResults: ProjectResponseDto[] =
         await Promise.all(projectPromises);
       return projectResults;
     } catch (error) {
@@ -114,7 +108,6 @@ export class ProjectsService {
     id: string,
     user: UserResponseDto,
   ): Promise<ProjectResponseDto> {
-    // j'ai changé Project par ProjectREsponseDto
     try {
       if (user.role === 'Admin' || user.role === 'ProjectManager') {
         return await this.projectsRepository.findOne({ where: { id } });
@@ -140,36 +133,30 @@ export class ProjectsService {
   }
   async findProjectsEmployee(
     user: UserResponseDto,
-  ): Promise<
-    ProjectResponseReferringEmployeeDto | ProjectResponseReferringEmployeeDto[]
-  > {
+  ): Promise<ProjectResponseDto | ProjectResponseDto[]> {
     try {
       const projectUserList: ProjectUsersResponseDto[] =
         await this.projectUsersService.employeeFindAll(user);
       if (!projectUserList) {
         throw new NotFoundException();
       }
-      const projectPromises: Promise<ProjectResponseReferringEmployeeDto>[] =
-        [];
+      const projectPromises: Promise<ProjectResponseDto>[] = [];
       for (const projectUser of projectUserList) {
         if (projectUser.userId === user.id) {
-          const project: ProjectReponseSimpleDto =
+          const project: ProjectReponsePartialDto =
             await this.projectsRepository.findOne({
               where: { id: projectUser.projectId },
             });
           const referringEmployee: UserResponseDto =
             await this.usersService.findOne(project.referringEmployeeId);
-          const projectDetails: ProjectResponseReferringEmployeeDto = {
-            //REFAIRE SANS LE DESCRIPTION
-            id: project.id,
-            name: project.name,
-            referringEmployeeId: project.referringEmployeeId,
+          const projectDetails: ProjectResponseDto = {
+            ...project,
             referringEmployee: referringEmployee,
           };
           projectPromises.push(Promise.resolve(projectDetails));
         }
       }
-      const projectUserArray: ProjectResponseReferringEmployeeDto[] =
+      const projectUserArray: ProjectResponseDto[] =
         await Promise.all(projectPromises);
       return projectUserArray;
     } catch (error) {

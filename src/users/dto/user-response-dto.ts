@@ -1,23 +1,25 @@
 import { UserRoleEnum } from '../entities/types/user.role.enum';
-import { Project } from '../../projects/entities/project.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UserResponseDto {
+  @ApiProperty({ type: String })
   id: string;
+  @ApiProperty({ type: String })
   username: string;
-  role?: UserRoleEnum;
+  @ApiProperty({ type: String })
   email: string;
-  employeeReferring?: Project[];
+  @ApiProperty({ type: String, enum: UserRoleEnum })
+  role?: UserRoleEnum;
+
   constructor(
     id: string,
     username: string,
-    role: UserRoleEnum,
     email: string,
-    employeeReferring: Project[],
+    role?: UserRoleEnum,
   ) {
     this.id = id;
     this.username = username;
-    this.role = role;
     this.email = email;
-    this.employeeReferring = employeeReferring;
+    this.role = role;
   }
 }
