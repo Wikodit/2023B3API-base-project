@@ -1,40 +1,4 @@
- /*
-        const projectResponse: ProjectUsersResponseAdminDto[] = projectList.map(
-          (project) => {
-            return {
-              id: project.id,
-              name: project.name,
-              referringEmployeeId: project.referringEmployeeId,
-            };
-          },
-        );
-        */
-        /*
-        const projectResponse = projectList.map((project) => {
-          return {
-            id: project.id,
-            name: project.name,
-            referringEmployeeId: project.referringEmployeeId,
-          };
-        });
-    TYPE ATTENDU :
-         type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: {
-                      type: 'string',
-                    },
-                    name: {
-                      type: 'string',
-                    },
-                    referringEmployeeId: {
-                      type: 'string',
-                    },
-                  },
-                  required: ['name', 'id', 'referringEmployeeId'],
-                  additionalProperties: false,
-                },
-              });
-         */
-        //return projectResponse;
+referentIdId pourquoi ?
+ProjectUserService adminResponse
+
+Bonnes relations ?

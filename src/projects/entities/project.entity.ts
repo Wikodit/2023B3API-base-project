@@ -16,7 +16,7 @@ export class Project {
   @Column()
   public name!: string;
   @IsOptional()
-  @Column()
+  @Column({ nullable: true })
   public description?: string | null;
   @Column()
   @ManyToOne(() => User, (user: User) => user.employeeReferring, {

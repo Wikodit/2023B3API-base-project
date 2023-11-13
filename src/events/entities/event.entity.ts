@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { EventTypeEnum } from './event.type.enum';
-import { EventStatusEnum } from './event.status.enum';
+import { EventTypeEnum } from './types/event.type.enum';
+import { EventStatusEnum } from './types/event.status.enum';
 
 @Entity()
 export class Event {

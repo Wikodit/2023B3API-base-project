@@ -1,4 +1,4 @@
-import { UserRoleEnum } from '../entities/user.role.enum';
+import { UserRoleEnum } from '../entities/types/user.role.enum';
 import { Project } from '../../projects/entities/project.entity';
 
 export class UserResponseDto {

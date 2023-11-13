@@ -10,7 +10,7 @@ import { Repository } from 'typeorm';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { UserRoleEnum } from './entities/user.role.enum';
+import { UserRoleEnum } from './entities/types/user.role.enum';
 import { UserResponseDto } from './dto/user-response-dto';
 
 @Injectable()

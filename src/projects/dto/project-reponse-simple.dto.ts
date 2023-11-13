@@ -1,4 +1,4 @@
-export class ProjectReponseAdminDto {
+export class ProjectReponseSimpleDto {
   id: string;
   name: string;
   referringEmployeeId: string;

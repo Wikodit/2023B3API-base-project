@@ -1,4 +1,3 @@
-import { UserResponseDto } from '../../users/dto/user-response-dto';
 import { ProjectResponseDto } from '../../projects/dto/project-response-dto';
 
 export class ProjectUsersResponseEmployeeDto {
@@ -7,7 +6,7 @@ export class ProjectUsersResponseEmployeeDto {
   endDate: Date;
   userId: string;
   projectId: string;
-  project: ProjectResponseDto;
+  project?: ProjectResponseDto;
   constructor(
     id: string,
     startDate: Date,

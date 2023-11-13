@@ -72,12 +72,7 @@ export class UsersController {
       const user: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
-      return {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-        email: user.email,
-      };
+      return user;
     } catch (error) {
       throw error;
     }
@@ -89,16 +84,11 @@ export class UsersController {
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<UserResponseDto> {
     try {
-      const user = await this.usersService.findOne(id);
+      const user: UserResponseDto = await this.usersService.findOne(id);
       if (!user) {
         throw new NotFoundException('Unidentified User');
       }
-      return {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-        email: user.email,
-      };
+      return user;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;

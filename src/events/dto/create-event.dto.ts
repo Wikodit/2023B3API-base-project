@@ -1,12 +1,8 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
-import { Entity } from 'typeorm';
+import { IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { EventStatusEnum } from '../entities/event.status.enum';
-import { EventTypeEnum } from '../entities/event.type.enum';
-@Entity()
+import { EventStatusEnum } from '../entities/types/event.status.enum';
+import { EventTypeEnum } from '../entities/types/event.type.enum';
 export class CreateEventDto {
-  //@IsNotEmpty()
-  public id!: string;
   @IsNotEmpty({ message: "Date can't be blank" })
   @ApiProperty({ example: '04/08/23', description: 'Event date' })
   public date!: string;

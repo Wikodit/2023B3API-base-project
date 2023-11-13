@@ -1,6 +1,7 @@
 import { IsNotEmpty, IsOptional, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Entity } from 'typeorm';
+import { Exclude } from 'class-transformer';
 @Entity()
 export class CreateProjectDto {
   @IsNotEmpty()

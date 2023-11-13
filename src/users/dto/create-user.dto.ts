@@ -1,6 +1,6 @@
 import { Entity } from 'typeorm';
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
-import { UserRoleEnum } from '../entities/user.role.enum';
+import { UserRoleEnum } from '../entities/types/user.role.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()

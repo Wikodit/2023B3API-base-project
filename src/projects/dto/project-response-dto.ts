@@ -4,7 +4,7 @@ import { ProjectUser } from '../../project-user/entities/project-user.entity';
 export class ProjectResponseDto {
   id: string;
   name: string;
-  description?: string;
+  description?: string | null;
   referringEmployeeId: string;
   referringEmployee: UserResponseDto;
   projectUser?: ProjectUser[];

@@ -18,7 +18,7 @@ import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { EventResponseDto } from './dto/event-response.dto';
 import { UsersService } from '../users/users.service';
 import { UserResponseDto } from '../users/dto/user-response-dto';
-import { EventTypeEnum } from './entities/event.type.enum';
+import { EventTypeEnum } from './entities/types/event.type.enum';
 
 @Controller('events')
 @ApiTags('Events')
@@ -110,20 +110,13 @@ export class EventsController {
       l'utilisateur est rattaché à un projet où le chef est référent
       pour la date de l'évènement.
    */
-  @Get(':id/validate')
+  @Post(':id/validate')
   @ApiOperation({ summary: 'Validation' })
   async validateOne(
     @Param('id') id: string,
     @Req() req,
   ): Promise<EventResponseDto> {
     try {
-      console.log('Coucou');
-      console.log('Coucou');
-      console.log('Coucou');
-      console.log('Coucou');
-      console.log('Coucou');
-      console.log('Coucou');
-      console.log('Coucou');
       const user: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
@@ -132,13 +125,13 @@ export class EventsController {
           'User is not allowed to see this event',
         );
       }
-      const eventToValid = await this.eventsService.acceptOne(id);
+      const eventToValid = await this.eventsService.acceptOne(id, user);
       return eventToValid;
     } catch (error) {
       throw error;
     }
   }
-  @Get(':id/decline')
+  @Post(':id/decline')
   @ApiOperation({ summary: 'Validation' })
   async declineOne(
     @Param('id') id: string,
@@ -153,7 +146,7 @@ export class EventsController {
           'User is not allowed to see this event',
         );
       }
-      const eventToReject = await this.eventsService.rejectOne(id);
+      const eventToReject = await this.eventsService.rejectOne(id, user);
       return eventToReject;
     } catch (error) {
       throw error;

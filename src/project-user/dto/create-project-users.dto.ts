@@ -4,8 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 export class CreateProjectUsersDto {
-  @IsNotEmpty()
-  public id!: string;
   @IsNotEmpty({ message: "Start date can't be empty" })
   @ApiProperty({ example: '08/02/21', description: 'Start date' })
   public startDate: Date;

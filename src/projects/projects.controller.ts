@@ -18,7 +18,7 @@ import { UsersService } from '../users/users.service';
 import { ProjectResponseDto } from './dto/project-response-dto';
 import { ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from '../users/dto/user-response-dto';
-import { UserRoleEnum } from '../users/entities/user.role.enum';
+import { UserRoleEnum } from '../users/entities/types/user.role.enum';
 import { ProjectResponseReferringEmployeeDto } from './dto/project-response-referringEmployee.dto';
 
 @Controller('projects')

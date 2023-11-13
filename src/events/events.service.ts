@@ -5,7 +5,8 @@ import { EventResponseDto } from './dto/event-response.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
-import { EventStatusEnum } from './entities/event.status.enum';
+import { EventStatusEnum } from './entities/types/event.status.enum';
+import { UserResponseDto } from '../users/dto/user-response-dto';
 
 @Injectable()
 export class EventsService {
@@ -18,11 +19,8 @@ export class EventsService {
     user: string,
   ): Promise<EventResponseDto> {
     const eventCreate: Event = this.eventsRepository.create({
-      id: createEventDto.id,
       userId: user,
-      eventType: createEventDto.eventType,
-      eventDescription: createEventDto.eventDescription,
-      date: createEventDto.date,
+      ...createEventDto,
     });
     const savedEvent: Event = await this.eventsRepository.save(eventCreate);
     return savedEvent;
@@ -41,31 +39,40 @@ export class EventsService {
       throw error;
     }
   }
-  async acceptOne(id: string) {
+  async acceptOne(
+    id: string,
+    user: UserResponseDto,
+  ): Promise<EventResponseDto> {
     try {
-      const eventToValid = await this.eventsRepository.findOne({
-        where: { id },
-      });
+      const eventToValid: EventResponseDto =
+        await this.eventsRepository.findOne({
+          where: { id },
+        });
       if (
         eventToValid.eventStatus === 'Accepted' ||
         eventToValid.eventStatus === 'Declined'
       ) {
         throw new Error('Event already accepted or declined');
       } else {
-        eventToValid.eventStatus = EventStatusEnum.Declined;
-        console.log('eventToValid');
-        console.log(eventToValid);
-        console.log(eventToValid);
-        console.log(eventToValid);
-        console.log(eventToValid);
-        await this.eventsRepository.save(eventToValid);
+        if (user.role === 'Admin') {
+          eventToValid.eventStatus = EventStatusEnum.Accepted;
+          await this.eventsRepository.save(eventToValid);
+          return eventToValid;
+        }
+        if (user.role === 'ProjectManager') {
+          //TODO
+          //Les chefs de projet peuvent valider ou refuser un évènement que si l'utilisateur
+          //est rattaché à un projet où le chef est référent pour la date de l'évènement.
+        }
       }
-      return eventToValid;
     } catch (error) {
       throw error;
     }
   }
-  async rejectOne(id: string) {
+  async rejectOne(
+    id: string,
+    user: UserResponseDto,
+  ): Promise<EventResponseDto> {
     try {
       const eventToReject = await this.eventsRepository.findOne({
         where: { id },
@@ -76,10 +83,28 @@ export class EventsService {
       ) {
         throw new Error('Event already accepted or declined');
       } else {
-        eventToReject.eventStatus = EventStatusEnum.Declined;
-        await this.eventsRepository.save(eventToReject);
+        if (user.role === 'Admin') {
+          eventToReject.eventStatus = EventStatusEnum.Declined;
+          await this.eventsRepository.save(eventToReject);
+          return eventToReject;
+        }
+        if (user.role === 'ProjectManager') {
+          // TODO
+          //Les chefs de projet peuvent valider ou refuser un évènement que si l'utilisateur
+          //est rattaché à un projet où le chef est référent pour la date de l'évènement.
+          //employee rataché projet , ou chef de projet date  projet
+
+          const dateEvent = new Date(eventToReject.date);
+          const dayEvent = dateEvent;
+          console.log('dayEvent');
+          console.log(dayEvent);
+          console.log(dayEvent);
+          console.log(dayEvent);
+          console.log(dayEvent);
+          console.log(dayEvent);
+          console.log(dayEvent);
+        }
       }
-      return eventToReject;
     } catch (error) {
       throw error;
     }

@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { UserRoleEnum } from './user.role.enum';
+import { UserRoleEnum } from './types/user.role.enum';
 import { Exclude } from 'class-transformer';
 import { ProjectUser } from '../../project-user/entities/project-user.entity';
 import { Project } from '../../projects/entities/project.entity';

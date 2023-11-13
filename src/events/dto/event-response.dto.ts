@@ -1,5 +1,5 @@
-import { EventStatusEnum } from '../entities/event.status.enum';
-import { EventTypeEnum } from '../entities/event.type.enum';
+import { EventStatusEnum } from '../entities/types/event.status.enum';
+import { EventTypeEnum } from '../entities/types/event.type.enum';
 
 export class EventResponseDto {
   id!: string;

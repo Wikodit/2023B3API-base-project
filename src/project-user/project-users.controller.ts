@@ -15,11 +15,11 @@ import { CreateProjectUsersDto } from './dto/create-project-users.dto';
 import { UpdateProjectUsersDto } from './dto/update-project-users.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from '../users/dto/user-response-dto';
-import { UserRoleEnum } from '../users/entities/user.role.enum';
+import { UserRoleEnum } from '../users/entities/types/user.role.enum';
 import { UsersService } from '../users/users.service';
 import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
 import { ProjectUser } from './entities/project-user.entity';
-import { ProjectReponseAdminDto } from '../projects/dto/project-reponse-admin.dto';
+import { ProjectReponseSimpleDto } from '../projects/dto/project-reponse-simple.dto';
 @ApiTags('Project-Users')
 @Controller('project-users')
 export class ProjectUsersController {
@@ -50,16 +50,14 @@ export class ProjectUsersController {
   }
 
   @Get()
-  async findAll(
-    @Req() req,
-  ): Promise<ProjectReponseAdminDto[] | ProjectUsersResponseDto[]> {
+  async findAll(@Req() req): Promise<ProjectReponseSimpleDto[]> {
     try {
       const userRequest: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
       const userRole: string = userRequest.role;
       if (userRole === 'Admin' || userRole === 'ProjectManager') {
-        const projectUser =
+        const projectUser: void | ProjectReponseSimpleDto[] =
           await this.projectUsersService.managerAndAdminfindAll();
         if (!projectUser) {
           throw new NotFoundException('ProjectUser not found');
@@ -67,9 +65,10 @@ export class ProjectUsersController {
         return projectUser;
       }
       if (userRole === 'Employee') {
-        //Remplacer par employeeFindAllOwnProjectsWithDetails
-        const projectUser =
-          await this.projectUsersService.employeeFindAll(userRequest);
+        const projectUser: ProjectReponseSimpleDto[] =
+          await this.projectUsersService.employeeFindAllOwnProjects(
+            userRequest,
+          );
         if (!projectUser) {
           throw new NotFoundException('ProjectUser not found');
         }
