@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, HttpStatus, HttpException, HttpCode } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import {CreateAuthDto} from '../auth/dto/create-auth.dto'
 
 @Controller('users')
 export class UsersController {
@@ -12,6 +13,15 @@ export class UsersController {
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
+
+  @Post('auth/login')
+  @UsePipes(new ValidationPipe())
+  login(@Body() CreateAuthDto : Record<string, any>) {
+    return this.usersService.login(CreateAuthDto.email , CreateAuthDto.password);
+  }
+  
+  
+  
 
   // @Get()
   // findAll() {
