@@ -1,43 +1,25 @@
 import {
   Controller,
-  // Get,
-  Post,
-  Body
-  // Patch,
-  // Param,
-  // Delete
+  HttpCode,
+  Req,
+  Get,
+  UseInterceptors,
+  UseGuards
 } from '@nestjs/common'
 import { UserService } from './user.service'
-import { User } from './entities/user.entity'
-import { CreateUserDto } from './dto/create-user.dto'
-// import { UpdateUserDto } from './dto/update-user.dto'
+import { RequestWithUser, User } from './entity/user.entity'
+import { PasswordInterceptor } from '../interceptor/password.interceptor'
+import { AuthGuard } from '../guard/auth.guard'
 
-@Controller('users')
+@UseGuards(AuthGuard)
+@Controller('/users')
 export class UserController {
   constructor(private readonly users: UserService) {}
 
-  @Post('/auth/sign-up')
-  async create(@Body() dto: CreateUserDto): Promise<User> {
-    return this.users.create(dto)
+  @UseInterceptors(PasswordInterceptor)
+  @HttpCode(200)
+  @Get('/me')
+  public async me(@Req() req: RequestWithUser): Promise<User> {
+    return this.users.findById(req.user.tokenPayload.sub)
   }
-
-  // @Get()
-  // findAll() {
-  //   return this.userService.findAll();
-  // }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.userService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.userService.update(+id, updateUserDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.userService.remove(+id);
-  // }
 }
