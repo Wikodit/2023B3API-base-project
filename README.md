@@ -1,42 +1,23 @@
-## Installation
+![Calendrier](logo.png "Calendrier")
 
-```bash
-$ npm install
+Simple REST API using implemented on top of HTTP that provide a way to manage projects
+
+## Setup
+
+You need to follow few steps to setup this project before start using/working with it.
+
+### Generating JWT signing key/secret
+
+To generate your own JWT secret for token signing use :
+```
+$ npm run gen-secret
 ```
 
-## Running the app
-
-```bash
-$ npm run start
-
-```
-
-## Get tests
-
-```bash
-# unit tests
-$ git submodule update --init --recursive
-
-```
+Get the secret and pass it to environ var `JWT_SECRET`
 
 ## Test
 
-```bash
-# unit tests
+To run full unit test stack use :
+```
 $ npm run test
-
-```
-
-### Setting up database
-
-```bash
-docker-compose up --force-recreate -V
-```
-
-### Testing e2e
-
-```bash
-docker-compose up --force-recreate -V
-
-npm run test
 ```
