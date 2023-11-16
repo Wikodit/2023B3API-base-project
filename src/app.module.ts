@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { UserModule } from './user/user.module'
-import { User } from './user/entity/user.entity'
+import { User } from './entity/user.entity'
+import { ProjectModule } from './project/project.module'
+import { AuthModule } from './auth/auth.module'
 
 @Module({
   imports: [
@@ -22,7 +24,9 @@ import { User } from './user/entity/user.entity'
       }),
       inject: [ConfigService]
     }),
-    UserModule
+    UserModule,
+    ProjectModule,
+    AuthModule
   ],
   providers: [],
   exports: [],

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { User } from './entity/user.entity'
+import { User } from '../entity/user.entity'
 import { Repository } from 'typeorm'
-import { UserSignUpDto } from './dto/user-sign-up.dto'
-import { UserSignInDto } from './dto/user-sign-in.dto'
+import { UserSignUpDto } from '../dto/user-sign-up.dto'
+import { UserSignInDto } from '../dto/user-sign-in.dto'
 import * as Argon2 from 'argon2'
 
 @Injectable()
@@ -37,13 +37,18 @@ export class UserService {
   /**
    * Return the user matching to the given crendentials or null.
    */
-  public async findUserFromCrendentials(
-    dto: UserSignInDto
-  ): Promise<User | null> {
+  public async findUserFromCrendentials(dto: UserSignInDto): Promise<User | null> {
     const user = await this.repository.findOneBy({ email: dto.email })
 
     return user && (await Argon2.verify(user.password, dto.password))
       ? user
       : null
+  }
+
+  /**
+   * Return all users
+   */
+  public async findAll(): Promise<User[]> {
+    return this.repository.find()
   }
 }

@@ -9,7 +9,7 @@ import {
 import { Reflector } from '@nestjs/core'
 import { Request } from 'express'
 import { AuthService } from '../auth/auth.service'
-import { META_PUBLIC_ACCESS_KEY } from '../decorator/public.decorator'
+import { META_PUBLIC_ACCESS_KEY } from '../decorator/public-access.decorator'
 
 @Injectable()
 export class AuthGuard implements CanActivate {

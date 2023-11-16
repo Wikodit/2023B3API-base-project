@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
-import { AuthTokenPayload } from '../../auth/auth-token'
+import { AuthTokenPayload } from '../auth/auth-token'
 
 export enum UserRole {
   EMPLOYEE = 'Employee',
@@ -14,16 +14,16 @@ export class User {
   readonly id!: string
 
   @Column({ unique: true, nullable: false })
-  public username!: string
+  username!: string
 
   @Column({ unique: true, nullable: false })
-  public email!: string
+  email!: string
 
   @Column({ nullable: false })
-  public password!: string
+  password!: string
 
   @Column({ enum: UserRole, default: UserRole.EMPLOYEE })
-  public role!: UserRole
+  role!: UserRole
 }
 
 export type RequestWithUser = Request & {

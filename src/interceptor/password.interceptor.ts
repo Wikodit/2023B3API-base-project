@@ -4,23 +4,18 @@ import {
   CallHandler,
   Injectable
 } from '@nestjs/common'
-import { User } from '../user/entity/user.entity'
+import { User } from '../entity/user.entity'
 import { Observable, map } from 'rxjs'
 
+type NonSensitiveUser = Omit<User, 'password'>
+
 @Injectable()
-export class PasswordInterceptor
-  implements NestInterceptor<User, Omit<User, 'password'>>
-{
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler<User>
-  ): Observable<Omit<User, 'password'>> {
+export class PasswordInterceptor implements NestInterceptor<User, NonSensitiveUser | NonSensitiveUser[]> {
+  intercept(context: ExecutionContext, next: CallHandler<User>): Observable<NonSensitiveUser | NonSensitiveUser[]> {
     return next.handle().pipe(
-      map((user) => {
-        const a = { ...user }
-        delete a.password
-        return a
-      })
+      map(user => (Array.isArray(user)
+        ? user.map(u => ({ ...u, password: undefined }))
+        : { ...user, password: undefined }))
     )
   }
 }
