@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { User } from '../entity/user.entity'
+import { User } from '../../entity/user.entity'
 import { JwtService } from '@nestjs/jwt'
 import { AuthTokenPayload } from './auth-token'
 

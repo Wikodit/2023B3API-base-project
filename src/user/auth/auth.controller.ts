@@ -8,14 +8,14 @@ import {
   UsePipes,
   ValidationPipe
 } from '@nestjs/common'
-import { UserService } from '../user/user.service'
-import { UserSignUpDto } from '../dto/user-sign-up.dto'
-import { User } from '../entity/user.entity'
-import { UserSignInDto } from '../dto/user-sign-in.dto'
+import { UserService } from '../user.service'
+import { UserSignUpDto } from '../../dto/user-sign-up.dto'
+import { User } from '../../entity/user.entity'
+import { UserSignInDto } from '../../dto/user-sign-in.dto'
 import { AccessToken } from './auth-token'
-import { PublicAccess } from '../decorator/public-access.decorator'
+import { PublicAccess } from '../../decorator/public-access.decorator'
 import { AuthService } from './auth.service'
-import { PasswordInterceptor } from '../interceptor/password.interceptor'
+import { PasswordInterceptor } from '../../interceptor/password.interceptor'
 
 @UsePipes(ValidationPipe)
 @UseInterceptors(PasswordInterceptor)

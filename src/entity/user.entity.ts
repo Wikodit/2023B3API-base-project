@@ -1,6 +1,4 @@
-import { Request } from 'express'
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
-import { AuthTokenPayload } from '../auth/auth-token'
 
 export enum UserRole {
   EMPLOYEE = 'Employee',
@@ -24,10 +22,4 @@ export class User {
 
   @Column({ enum: UserRole, default: UserRole.EMPLOYEE })
   role!: UserRole
-}
-
-export type RequestWithUser = Request & {
-  user: {
-    tokenPayload: AuthTokenPayload
-  }
 }

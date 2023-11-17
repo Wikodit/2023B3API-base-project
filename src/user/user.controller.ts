@@ -9,9 +9,10 @@ import {
   ParseUUIDPipe
 } from '@nestjs/common'
 import { UserService } from './user.service'
-import { RequestWithUser, User } from '../entity/user.entity'
+import { User } from '../entity/user.entity'
 import { PasswordInterceptor } from '../interceptor/password.interceptor'
 import { AuthGuard } from '../guard/auth.guard'
+import { RequestWithUser } from '../types'
 
 @UseGuards(AuthGuard)
 @Controller('/users')
@@ -21,12 +22,12 @@ export class UserController {
   @UseInterceptors(PasswordInterceptor)
   @Get('/me')
   public async me(@Req() req: RequestWithUser): Promise<User> {
-    return this.users.findById(req.user.tokenPayload.sub)
+    return req.user
   }
 
   @UseInterceptors(PasswordInterceptor)
   @Get()
-  public async root(): Promise<any> {
+  public async root(): Promise<User[]> {
     return this.users.findAll()
   }
 

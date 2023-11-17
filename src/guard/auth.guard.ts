@@ -8,14 +8,17 @@ import {
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { Request } from 'express'
-import { AuthService } from '../auth/auth.service'
+import { AuthService } from '../user/auth/auth.service'
 import { META_PUBLIC_ACCESS_KEY } from '../decorator/public-access.decorator'
+import { UserService } from '../user/user.service'
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     @Inject(forwardRef(() => AuthService))
     private readonly auth: AuthService,
+    @Inject(forwardRef(() => UserService))
+    private readonly users: UserService,
     private readonly reflector: Reflector
   ) {}
 
@@ -32,12 +35,18 @@ export class AuthGuard implements CanActivate {
 
     if (req.headers.authorization) {
       const token = extractJwtFromHeader(req.headers.authorization)
+      
       if (token) {
         const payload = await this.auth.verifyToken(token)
+        
         if (payload) {
-          req['user'] = { tokenPayload: payload }
-
-          return true
+          const user = await this.users.findById(payload.sub)
+          
+          if (user) {
+            req['user'] = user
+            
+            return true
+          }
         }
       }
     }

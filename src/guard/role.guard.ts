@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, UnauthorizedException, forwardRef, Inject } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { META_REQUIRED_ROLES_KEY } from '../decorator/role.decorator'
+import { META_REQUIRED_ROLES_KEY } from '../decorator/required-role.decorator'
 import { Request } from 'express'
 import { UserService } from '../user/user.service'
 import { UserRole } from '../entity/user.entity'
