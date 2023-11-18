@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventResponseDto } from './dto/event-response.dto';
@@ -7,12 +7,24 @@ import { Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
 import { EventStatusEnum } from './entities/types/event.status.enum';
 import { UserResponseDto } from '../users/dto/user-response-dto';
+import { ProjectUsersService } from '../project-user/project-users.service';
+import { UsersService } from '../users/users.service';
+import { ProjectsService } from '../projects/projects.service';
 
 @Injectable()
 export class EventsService {
   constructor(
     @InjectRepository(Event)
     private eventsRepository: Repository<Event>,
+
+    @Inject(ProjectUsersService)
+    public projectUsersService: ProjectUsersService,
+
+    @Inject(UsersService)
+    public usersService: UsersService,
+
+    @Inject(ProjectsService)
+    public projectsService: ProjectsService,
   ) {}
   async create(
     createEventDto: CreateEventDto,
@@ -96,13 +108,58 @@ export class EventsService {
 
           const dateEvent = new Date(eventToReject.date);
           const dayEvent = dateEvent;
+
+          //Utilisateur en param
+          const userIsRejected = await this.usersService.findOne(
+            eventToReject.userId,
+          );
+          //Tous les projects de l'utilisateur en param
+          const getAllProjectsUsersToRefuse =
+            await this.projectUsersService.employeeFindAllOwnProjects(
+              userIsRejected,
+            );
+
+          const getReferentsProjects = await this.projectsService.findAll({
+            where: { referringEmployeeId: user.id },
+          });
+          //J'ai ici toues les projects du manager.
+          //Je veux tous les projectsUsers liés à ces projects
+          const projects = await this.projectsService.findAllForAdmin();
+          const projectsUsers =
+            await this.projectUsersService.employeeFindAll(user);
+          const ownPro = projectsUsers.filter((projectUser) => {
+            return projectUser.userId === user.id;
+          });
+
+          console.log('getAllProjectsUsersToRefuse');
+          console.log(getAllProjectsUsersToRefuse);
+          console.log(getAllProjectsUsersToRefuse);
+          console.log('getAllReferentsProjects');
+          console.log(getReferentsProjects);
+          console.log(getReferentsProjects);
           console.log('dayEvent');
           console.log(dayEvent);
           console.log(dayEvent);
-          console.log(dayEvent);
-          console.log(dayEvent);
-          console.log(dayEvent);
-          console.log(dayEvent);
+
+          console.log('ownPro');
+          console.log(ownPro);
+          console.log(ownPro);
+          /*
+          const getAllProjectsManager =
+            await this.projectUsersService.employeeFindAll(user);
+          const dateManagerProject = getAllProjectsManager.map(
+            (projectsUser) => ({
+              startDate: `${projectsUser.startDate}`,
+              endDate: `${projectsUser.endDate}`,
+            }),
+          );
+          console.log('dateManagerProject');
+          console.log(dateManagerProject);
+          console.log(dateManagerProject);
+          console.log('userProjectDate');
+          console.log(getAllProjectsManager);
+          console.log(getAllProjectsManager);
+           */
         }
       }
     } catch (error) {

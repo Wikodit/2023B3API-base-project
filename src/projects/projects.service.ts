@@ -79,10 +79,10 @@ export class ProjectsService {
     }
   }
 
-  async findAll(): Promise<ProjectResponseDto[]> {
+  async findAll(query?: any): Promise<ProjectResponseDto[]> {
     try {
       const projects: ProjectResponseDto[] =
-        await this.projectsRepository.find();
+        await this.projectsRepository.find(query);
 
       const projectPromises: Promise<ProjectResponseDto>[] = projects.map(
         async (project: ProjectResponseDto) => {

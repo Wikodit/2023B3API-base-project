@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
@@ -13,6 +13,7 @@ import { jwtConstants } from './users/auth/constant';
 import { ProjectUsersModule } from './project-user/project-users.module';
 import { ProjectUser } from './project-user/entities/project-user.entity';
 import { EventsModule } from './events/events.module';
+import { RequestLoggingMiddleware } from './middleware/request-logging.middleware';
 
 @Module({
   imports: [
@@ -51,4 +52,8 @@ import { EventsModule } from './events/events.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestLoggingMiddleware).forRoutes('*');
+  }
+}
