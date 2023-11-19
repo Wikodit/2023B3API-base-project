@@ -19,6 +19,9 @@ import { EventResponseDto } from './dto/event-response.dto';
 import { UsersService } from '../users/users.service';
 import { UserResponseDto } from '../users/dto/user-response-dto';
 import { EventTypeEnum } from './entities/types/event.type.enum';
+import { UpdateResult } from 'typeorm';
+import { ProjectUsersService } from '../project-user/project-users.service';
+import { ProjectUser } from '../project-user/entities/project-user.entity';
 
 @Controller('events')
 @ApiTags('Events')
@@ -27,6 +30,8 @@ export class EventsController {
     private readonly eventsService: EventsService,
     @Inject(UsersService)
     private readonly usersService: UsersService,
+    @Inject(ProjectUsersService)
+    private readonly projectUsersService: ProjectUsersService,
   ) {}
 
   @Post()
@@ -115,39 +120,92 @@ export class EventsController {
   async validateOne(
     @Param('id') id: string,
     @Req() req,
-  ): Promise<EventResponseDto> {
+  ): Promise<UpdateResult> {
     try {
       const user: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
+      const eventToValid = await this.eventsService.findOne(id);
       if (user.role === 'Employee') {
         throw new UnauthorizedException(
           'User is not allowed to see this event',
         );
       }
-      const eventToValid = await this.eventsService.acceptOne(id, user);
-      return eventToValid;
+      if (
+        eventToValid.eventStatus === 'Accepted' ||
+        eventToValid.eventStatus === 'Declined'
+      ) {
+        throw new Error('Event already accepted or declined');
+      }
+
+      if (user.role === 'ProjectManager') {
+        const isSameDate: ProjectUser | void =
+          await this.projectUsersService.projectManagerGetDate(
+            user.id,
+            new Date(eventToValid.date),
+          );
+
+        if (isSameDate == null) {
+          throw new UnauthorizedException("Manager can't validate this event");
+        }
+        console.log('Aucune reponse ici');
+
+        console.log(isSameDate);
+        const updateEvent = await this.eventsService.acceptEvent(
+          eventToValid.id,
+        );
+        console.log(updateEvent);
+        return updateEvent;
+      }
+      if (user.role === 'Admin') {
+        const updateEvent = await this.eventsService.acceptEvent(
+          eventToValid.id,
+        );
+        return updateEvent;
+      }
     } catch (error) {
       throw error;
     }
   }
   @Post(':id/decline')
   @ApiOperation({ summary: 'Validation' })
-  async declineOne(
-    @Param('id') id: string,
-    @Req() req,
-  ): Promise<EventResponseDto> {
+  async declineOne(@Param('id') id: string, @Req() req): Promise<UpdateResult> {
     try {
       const user: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
+      const eventToValid = await this.eventsService.findOne(id);
       if (user.role === 'Employee') {
         throw new UnauthorizedException(
           'User is not allowed to see this event',
         );
       }
-      const eventToReject = await this.eventsService.rejectOne(id, user);
-      return eventToReject;
+      if (
+        eventToValid.eventStatus === 'Accepted' ||
+        eventToValid.eventStatus === 'Declined'
+      ) {
+        throw new Error('Event already accepted or declined');
+      }
+      if (user.role === 'ProjectManager') {
+        const isSameDate: ProjectUser | void =
+          await this.projectUsersService.projectManagerGetDate(
+            user.id,
+            new Date(eventToValid.date),
+          );
+        if (isSameDate == null) {
+          throw new UnauthorizedException("Manager can't validate this event");
+        }
+        const updateEvent = await this.eventsService.declineEvent(
+          eventToValid.id,
+        );
+        return updateEvent;
+      }
+      if (user.role === 'Admin') {
+        const updateEvent = await this.eventsService.declineEvent(
+          eventToValid.id,
+        );
+        return updateEvent;
+      }
     } catch (error) {
       throw error;
     }

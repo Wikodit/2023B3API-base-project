@@ -13,6 +13,7 @@ import { jwtConstants } from './users/auth/constant';
 import { ProjectUsersModule } from './project-user/project-users.module';
 import { ProjectUser } from './project-user/entities/project-user.entity';
 import { EventsModule } from './events/events.module';
+import { Event } from './events/entities/event.entity';
 import { RequestLoggingMiddleware } from './middleware/request-logging.middleware';
 
 @Module({
@@ -33,7 +34,7 @@ import { RequestLoggingMiddleware } from './middleware/request-logging.middlewar
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Project, ProjectUser], //__dirname + '/../**/*.entity.js'
+        entities: [User, Project, ProjectUser, Event], //__dirname + '/../**/*.entity.js'
         synchronize: true,
         autoLoadEntities: true,
       }),

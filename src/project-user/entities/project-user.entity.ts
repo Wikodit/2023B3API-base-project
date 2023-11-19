@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Project } from '../../projects/entities/project.entity';
 
@@ -12,10 +18,12 @@ export class ProjectUser {
   public endDate: Date;
   @Column()
   @ManyToOne(() => User, (user) => user.projectUser, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'userId' })
   userId: string;
   @Column()
   @ManyToOne(() => Project, (project) => project.projectUser, {
     onDelete: 'SET NULL',
   })
+  @JoinColumn({ name: 'projectId' })
   projectId: string;
 }

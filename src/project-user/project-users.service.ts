@@ -10,7 +10,12 @@ import { CreateProjectUsersDto } from './dto/create-project-users.dto';
 import { UpdateProjectUsersDto } from './dto/update-project-users.dto';
 import { ProjectUser } from './entities/project-user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {
+  FindManyOptions,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { UserResponseDto } from '../users/dto/user-response-dto';
 import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
 import { UsersService } from '../users/users.service';
@@ -126,6 +131,33 @@ export class ProjectUsersService {
       throw error;
     }
   }
+
+  async projectManagerGetDate(
+    userId: string,
+    eventToValid: Date,
+  ): Promise<ProjectUser | void> {
+    try {
+      const options: FindManyOptions<ProjectUsersResponseDto> = {
+        where: {
+          startDate: LessThanOrEqual(eventToValid),
+          endDate: MoreThanOrEqual(eventToValid),
+        },
+        relations: ['projectId'],
+      };
+      const projectUsers = await this.projectUsersRepository.find(options);
+      if (!projectUsers) {
+        throw new NotFoundException('Project not found');
+      }
+      projectUsers.forEach((projectUser: ProjectUser) => {
+        if (projectUser.userId === userId) {
+          return projectUser;
+        }
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async employeeFindAllOwnProjects(
     userRequest: UserResponseDto,
   ): Promise<ProjectReponsePartialDto[]> {
@@ -166,7 +198,6 @@ export class ProjectUsersService {
       throw error;
     }
   }
-
   async findOne(
     id: string,
     userRequest: UserResponseDto,
