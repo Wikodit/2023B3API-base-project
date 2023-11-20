@@ -135,24 +135,20 @@ export class ProjectUsersService {
   async projectManagerGetDate(
     userId: string,
     eventToValid: Date,
-  ): Promise<ProjectUser | void> {
+  ): Promise<ProjectUser> {
     try {
-      const options: FindManyOptions<ProjectUsersResponseDto> = {
+      const options: FindManyOptions<ProjectUser> = {
         where: {
           startDate: LessThanOrEqual(eventToValid),
           endDate: MoreThanOrEqual(eventToValid),
+          project: {
+            referringEmployeeId: userId,
+          },
         },
-        relations: ['projectId'],
+        relations: ['project'],
       };
-      const projectUsers = await this.projectUsersRepository.find(options);
-      if (!projectUsers) {
-        throw new NotFoundException('Project not found');
-      }
-      projectUsers.forEach((projectUser: ProjectUser) => {
-        if (projectUser.userId === userId) {
-          return projectUser;
-        }
-      });
+      const projectUsers = await this.projectUsersRepository.findOne(options);
+      return projectUsers;
     } catch (error) {
       throw error;
     }

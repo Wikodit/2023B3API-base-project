@@ -26,6 +26,7 @@ export class User {
   )
   projectUser: ProjectUser[];
 
+  //Optionnel ? En trop ?
   @OneToMany(() => Project, (project: Project) => project.referringEmployeeId)
   public employeeReferring: Project[];
 }

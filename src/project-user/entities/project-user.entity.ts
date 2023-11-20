@@ -12,18 +12,26 @@ import { Project } from '../../projects/entities/project.entity';
 export class ProjectUser {
   @PrimaryGeneratedColumn('uuid')
   public id!: string;
+
   @Column({ type: 'timestamp' })
   public startDate: Date;
+
   @Column({ type: 'timestamp' })
   public endDate: Date;
+
   @Column()
-  @ManyToOne(() => User, (user) => user.projectUser, { onDelete: 'SET NULL' })
+  public projectId: string;
+
+  @Column()
+  public userId: string;
+
+  @ManyToOne(() => User, (user) => user.id, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'userId' })
-  userId: string;
-  @Column()
-  @ManyToOne(() => Project, (project) => project.projectUser, {
+  user: User;
+
+  @ManyToOne(() => Project, (project) => project.id, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'projectId' })
-  projectId: string;
+  project: Project;
 }

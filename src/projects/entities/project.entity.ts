@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -13,17 +14,17 @@ import { UserResponseDto } from '../../users/dto/user-response-dto';
 export class Project {
   @PrimaryGeneratedColumn('uuid')
   public id!: string;
+
   @Column()
   public name!: string;
-  //@IsOptional()
-  //@Column({ nullable: true })
-  //public description?: string | null;
+
   @Column()
-  @ManyToOne(() => User, (user: User) => user.employeeReferring, {
-    onDelete: 'SET NULL',
-  })
-  public referringEmployeeId!: string;
-  public referringEmployee!: UserResponseDto;
+  public referringEmployeeId: string;
+
+  @ManyToOne(() => User, (user: User) => user.id)
+  @JoinColumn({ name: 'referringEmployeeId' })
+  referringEmployee!: UserResponseDto;
+
   @IsOptional()
   @OneToMany(
     () => ProjectUser,

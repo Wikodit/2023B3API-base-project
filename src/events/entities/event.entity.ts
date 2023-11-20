@@ -1,6 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { EventTypeEnum } from './types/event.type.enum';
 import { EventStatusEnum } from './types/event.status.enum';
+import { User } from '../../users/entities/user.entity';
 
 @Entity()
 export class Event {
@@ -21,6 +28,11 @@ export class Event {
   public eventType!: EventTypeEnum;
   @Column()
   public eventDescription?: string;
+
   @Column()
-  public userId!: string;
+  userId!: string;
+
+  @ManyToOne(() => User, (user) => user.id)
+  @JoinColumn({ name: 'userId' })
+  user: User;
 }

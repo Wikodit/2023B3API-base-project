@@ -20,6 +20,7 @@ import { UsersService } from '../users/users.service';
 import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
 import { ProjectUser } from './entities/project-user.entity';
 import { ProjectReponsePartialDto } from '../projects/dto/project-reponse-partial.dto';
+import { ProjectUsersResponseAdminDto } from './dto/project-users-response-admin.dto';
 @ApiTags('Project-Users')
 @Controller('project-users')
 export class ProjectUsersController {
@@ -32,7 +33,7 @@ export class ProjectUsersController {
   async create(
     @Req() req,
     @Body() createProjectUsersDto: CreateProjectUsersDto,
-  ): Promise<ProjectUser> {
+  ): Promise<ProjectUser | ProjectUsersResponseAdminDto> {
     try {
       const user: UserResponseDto = await this.usersService.findOne(
         req.user.sub,

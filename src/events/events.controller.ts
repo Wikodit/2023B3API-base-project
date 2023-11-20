@@ -10,6 +10,7 @@ import {
   Inject,
   Req,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -135,7 +136,7 @@ export class EventsController {
         eventToValid.eventStatus === 'Accepted' ||
         eventToValid.eventStatus === 'Declined'
       ) {
-        throw new Error('Event already accepted or declined');
+        throw new ForbiddenException('Event already accepted or declined');
       }
 
       if (user.role === 'ProjectManager') {
@@ -144,17 +145,12 @@ export class EventsController {
             user.id,
             new Date(eventToValid.date),
           );
-
         if (isSameDate == null) {
           throw new UnauthorizedException("Manager can't validate this event");
         }
-        console.log('Aucune reponse ici');
-
-        console.log(isSameDate);
         const updateEvent = await this.eventsService.acceptEvent(
           eventToValid.id,
         );
-        console.log(updateEvent);
         return updateEvent;
       }
       if (user.role === 'Admin') {
