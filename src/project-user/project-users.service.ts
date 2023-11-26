@@ -57,8 +57,8 @@ export class ProjectUsersService {
           where: { userId: userAssigned.id },
         });
 
-      const startDateNewPro = new Date(projectUser.startDate).getTime();
-      const endDateNewPro = new Date(projectUser.endDate).getTime();
+      const startDateNewPro: number = new Date(projectUser.startDate).getTime();
+      const endDateNewPro: number = new Date(projectUser.endDate).getTime();
 
       userProjects.forEach((project: ProjectUser) => {
         const userProjectDate = {
@@ -89,21 +89,10 @@ export class ProjectUsersService {
         const savedProjectUsers: ProjectUser =
           await this.projectUsersRepository.save(projectUser);
         const adminResponse: ProjectUsersResponseAdminDto = {
-          /*
-          id: savedProjectUsers.id,
-          startDate: savedProjectUsers.startDate,
-          endDate: savedProjectUsers.endDate,
-          userId: savedProjectUsers.userId,
-          projectId: savedProjectUsers.projectId,
-           */
           ...savedProjectUsers,
           user: userAssigned,
           project: {
-            id: projectAssigned.id,
-            name: projectAssigned.name,
-            referringEmployeeId: projectAssigned.referringEmployeeId,
-
-            //...projectAssigned,
+            ...projectAssigned,
             referringEmployee: employeeReferring,
           },
         };
@@ -147,7 +136,8 @@ export class ProjectUsersService {
         },
         relations: ['project'],
       };
-      const projectUsers = await this.projectUsersRepository.findOne(options);
+      const projectUsers: ProjectUser =
+        await this.projectUsersRepository.findOne(options);
       return projectUsers;
     } catch (error) {
       throw error;

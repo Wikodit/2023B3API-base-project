@@ -11,6 +11,7 @@ import {
   NotFoundException,
   Req,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -24,11 +25,20 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import dayjs from 'dayjs';
+import { EventsService } from '../events/events.service';
+import { eachDayOfInterval, isWeekend } from 'date-fns';
 
 @Controller('users')
 @ApiTags('Users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+
+    //@Inject(forwardRef(() => EventsService))
+    @Inject(EventsService)
+    private eventsService: EventsService,
+  ) {}
 
   @Public()
   @UsePipes(new ValidationPipe())
@@ -114,6 +124,58 @@ export class UsersController {
       }));
 
       return usersResponse;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /*
+GET /users/:id/meal-vouchers/:month
+
+Speech client : En tant qu'employé, je dois pouvoir voir le montant accordé en
+titres restaurant par l'entreprise pour un mois donné afin d'éviter des erreurs
+comptables dans le calculs des titres restaurants.
+
+Critères d'acceptation : Étant donné que je suis un employé et que je travaille
+du Lundi au Vendredi sans interruption, et ce, même les jours féries, lorsque
+je demande mon montant de titres restaurant pour un mois donné alors le système
+me donne ce montant selon le calcul suivant : l'entreprise accorde 8 euros de
+titres restaurants par jour travaillé par employé et les employés n'ont pas le
+droit aux titres restaurants les jours de télétravail ou de congés payés
+
+Parametres (query) :
+id!: string; //au format uuidv4
+month!: number; //nombres de 1 (Janvier) à 12 (Decembre)
+*/
+
+  @Get(':id/meal-vouchers/:month')
+  async getMealVouchers(
+    @Param('id') id: string,
+    @Param('month') month: number,
+  ) {
+    try {
+      const firstDayInSelectedMonth = dayjs()
+        .month(month - 1)
+        .startOf('month')
+        .toDate();
+      const lastDayInSelectedMonth = dayjs()
+        .month(month - 1)
+        .endOf('month')
+        .toDate();
+      const allDaysInMonth: Date[] = eachDayOfInterval({
+        start: firstDayInSelectedMonth,
+        end: lastDayInSelectedMonth,
+      });
+      const workingDays: number = allDaysInMonth.filter(
+        (day: Date) => !isWeekend(day),
+      ).length;
+      const eventsCount: number =
+        await this.eventsService.getEventsEmployeeInSelectedMonth(
+          id,
+          firstDayInSelectedMonth,
+          lastDayInSelectedMonth,
+        );
+      return { ticketRestaurant: (workingDays - eventsCount) * 8 };
     } catch (error) {
       throw error;
     }

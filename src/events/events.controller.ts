@@ -107,15 +107,6 @@ export class EventsController {
       throw error;
     }
   }
-  /*
-  Il est impossible d'altérer le statut d'un projet déjà validé ou refusé
-  Les administrateurs peuvent valider n'importe quelle demande
-  Il n'est possible de traiter un évènement que si l'utilisateur est
-      rattaché à un projet le jour de l'évènement
-  Les chefs de projet peuvent valider ou refuser un évènement que si
-      l'utilisateur est rattaché à un projet où le chef est référent
-      pour la date de l'évènement.
-   */
   @Post(':id/validate')
   @ApiOperation({ summary: 'Validation' })
   async validateOne(
@@ -148,13 +139,13 @@ export class EventsController {
         if (isSameDate == null) {
           throw new UnauthorizedException("Manager can't validate this event");
         }
-        const updateEvent = await this.eventsService.acceptEvent(
+        const updateEvent: UpdateResult = await this.eventsService.acceptEvent(
           eventToValid.id,
         );
         return updateEvent;
       }
       if (user.role === 'Admin') {
-        const updateEvent = await this.eventsService.acceptEvent(
+        const updateEvent: UpdateResult = await this.eventsService.acceptEvent(
           eventToValid.id,
         );
         return updateEvent;
@@ -191,13 +182,13 @@ export class EventsController {
         if (isSameDate == null) {
           throw new UnauthorizedException("Manager can't validate this event");
         }
-        const updateEvent = await this.eventsService.declineEvent(
+        const updateEvent: UpdateResult = await this.eventsService.declineEvent(
           eventToValid.id,
         );
         return updateEvent;
       }
       if (user.role === 'Admin') {
-        const updateEvent = await this.eventsService.declineEvent(
+        const updateEvent: UpdateResult = await this.eventsService.declineEvent(
           eventToValid.id,
         );
         return updateEvent;

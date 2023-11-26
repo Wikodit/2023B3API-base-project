@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
@@ -23,7 +24,7 @@ export class ProjectsService {
   constructor(
     @Inject(UsersService)
     public usersService: UsersService,
-    @Inject(ProjectUsersService)
+    @Inject(forwardRef(() => ProjectUsersService))
     public projectUsersService: ProjectUsersService,
     @InjectRepository(Project)
     private projectsRepository: Repository<Project>,
