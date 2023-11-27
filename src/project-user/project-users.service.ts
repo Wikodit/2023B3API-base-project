@@ -11,6 +11,7 @@ import { UpdateProjectUsersDto } from './dto/update-project-users.dto';
 import { ProjectUser } from './entities/project-user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
+  Between,
   FindManyOptions,
   LessThanOrEqual,
   MoreThanOrEqual,
@@ -23,6 +24,7 @@ import { ProjectsService } from '../projects/projects.service';
 import { ProjectResponseDto } from '../projects/dto/project-response-dto';
 import { ProjectUsersResponseAdminDto } from './dto/project-users-response-admin.dto';
 import { ProjectReponsePartialDto } from '../projects/dto/project-reponse-partial.dto';
+import { Project } from '../projects/entities/project.entity';
 
 @Injectable()
 export class ProjectUsersService {
@@ -217,7 +219,24 @@ export class ProjectUsersService {
       throw error;
     }
   }
+  /*
+  async getProjectForUserOnDate(userId: string, date: Date): Promise<Project> {
+    const projectUser = await this.projectUsersRepository.findOne({
+      where: {
+        userId,
+        startDate: Between(date, date),
+      },
+    });
 
+    if (!projectUser) {
+      throw new NotFoundException(
+        'No project found for this user on this date',
+      );
+    }
+
+    return this.projectsService.findOne(projectUser.projectId);
+  }
+   */
   update(id: number, updateProjectUsersDto: UpdateProjectUsersDto) {
     return `This action updates a #${id} projectUser`;
   }

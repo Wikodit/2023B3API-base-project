@@ -25,7 +25,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import dayjs from 'dayjs';
+import * as dayjs from 'dayjs';
 import { EventsService } from '../events/events.service';
 import { eachDayOfInterval, isWeekend } from 'date-fns';
 
@@ -175,6 +175,7 @@ month!: number; //nombres de 1 (Janvier) à 12 (Decembre)
           firstDayInSelectedMonth,
           lastDayInSelectedMonth,
         );
+      console.log('Events count', eventsCount);
       return { ticketRestaurant: (workingDays - eventsCount) * 8 };
     } catch (error) {
       throw error;

@@ -69,8 +69,10 @@ export class EventsService {
     lastDay: Date,
   ): Promise<number> {
     try {
+      console.log('coucou');
       const firstDayOfMonth: string = firstDay.toISOString().slice(0, 10);
       const lastDayOfMonth: string = lastDay.toISOString().slice(0, 10);
+      console.log(firstDayOfMonth, lastDayOfMonth);
       const options: FindManyOptions<Event> = {
         where: {
           userId,
