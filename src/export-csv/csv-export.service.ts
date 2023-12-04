@@ -49,7 +49,7 @@ export class CsvExportService {
         }),
       );
       const csvWriter = createObjectCsvWriter({
-        path: 'conges_acceptes.csv', // Specify the file name
+        path: 'conges_acceptes.csv',
         header: [
           { id: 'UserName', title: "Nom d'utilisateur" },
           { id: 'ProjectName', title: 'Nom du projet' },

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -12,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UserRoleEnum } from './entities/types/user.role.enum';
 import { UserResponseDto } from './dto/user-response-dto';
+import { LoginResponseDto } from './dto/login-response.dto';
 
 @Injectable()
 export class UsersService {
@@ -39,17 +41,13 @@ export class UsersService {
       role: savedUser.role,
     };
   }
-  async login(loginDto: LoginDto): Promise<{
-    id: string;
-    email: string;
-    access_token: string;
-  }> {
+  async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     try {
       const user: User = await this.usersRepository.findOne({
         where: { email: loginDto.email },
       });
       if (!user) {
-        throw new Error('User not found');
+        throw new NotFoundException('User not found');
       }
       const passwordMatch = await bcrypt.compare(
         loginDto.password,
@@ -60,18 +58,9 @@ export class UsersService {
       }
       const payload = { sub: user.id, email: user.email };
       return {
-        id: user.id,
-        email: user.email,
+        ...user,
         access_token: await this.jwtService.signAsync(payload),
       };
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async findAll(): Promise<UserResponseDto[]> {
-    try {
-      return this.usersRepository.find();
     } catch (error) {
       throw error;
     }
@@ -88,6 +77,14 @@ export class UsersService {
         cause: new Error(),
         description: 'Some error description',
       });
+    }
+  }
+
+  async findAll(): Promise<UserResponseDto[]> {
+    try {
+      return this.usersRepository.find();
+    } catch (error) {
+      throw error;
     }
   }
 }

@@ -4,14 +4,19 @@ import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class EventResponseDto {
   id!: string;
+
   @IsDateString()
   date!: string;
+
   @IsEnum(EventStatusEnum)
   eventStatus?: EventStatusEnum;
+
   @IsEnum(EventTypeEnum)
   eventType!: EventTypeEnum;
+
   @IsString()
   @IsOptional()
   eventDescription?: string;
+
   userId: string;
 }

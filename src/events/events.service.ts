@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
-import { UpdateEventDto } from './dto/update-event.dto';
 import { EventResponseDto } from './dto/event-response.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, FindManyOptions, Repository } from 'typeorm';
@@ -36,16 +35,16 @@ export class EventsService {
     const savedEvent: Event = await this.eventsRepository.save(eventCreate);
     return savedEvent;
   }
-  async findAll(): Promise<EventResponseDto[]> {
+  async findOne(id: string): Promise<EventResponseDto> {
     try {
-      return await this.eventsRepository.find();
+      return await this.eventsRepository.findOne({ where: { id } });
     } catch (error) {
       throw error;
     }
   }
-  async findOne(id: string): Promise<EventResponseDto> {
+  async findAll(): Promise<EventResponseDto[]> {
     try {
-      return await this.eventsRepository.findOne({ where: { id } });
+      return await this.eventsRepository.find();
     } catch (error) {
       throw error;
     }
@@ -62,17 +61,14 @@ export class EventsService {
     });
     return declineEvent;
   }
-
   async getEventsEmployeeInSelectedMonth(
     userId: string,
     firstDay: Date,
     lastDay: Date,
   ): Promise<number> {
     try {
-      console.log('coucou');
       const firstDayOfMonth: string = firstDay.toISOString().slice(0, 10);
       const lastDayOfMonth: string = lastDay.toISOString().slice(0, 10);
-      console.log(firstDayOfMonth, lastDayOfMonth);
       const options: FindManyOptions<Event> = {
         where: {
           userId,
@@ -86,7 +82,6 @@ export class EventsService {
       throw error;
     }
   }
-
   async getAcceptedEventsForCurrentMonth(): Promise<EventResponseDto[]> {
     try {
       const currentDate = new Date();
@@ -110,17 +105,10 @@ export class EventsService {
           eventStatus: EventStatusEnum.Accepted,
         },
       };
-
       const events: Event[] = await this.eventsRepository.find(options);
       return events;
     } catch (error) {
       throw error;
     }
-  }
-  update(id: number, updateEventDto: UpdateEventDto) {
-    return `This action updates a #${id} event`;
-  }
-  remove(id: number) {
-    return `This action removes a #${id} event`;
   }
 }

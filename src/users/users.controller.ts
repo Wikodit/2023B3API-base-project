@@ -28,6 +28,7 @@ import {
 import * as dayjs from 'dayjs';
 import { EventsService } from '../events/events.service';
 import { eachDayOfInterval, isWeekend } from 'date-fns';
+import { LoginResponseDto } from './dto/login-response.dto';
 
 @Controller('users')
 @ApiTags('Users')
@@ -62,11 +63,7 @@ export class UsersController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Login user' })
   @ApiBody({ type: LoginDto })
-  async login(@Body() loginDto: LoginDto): Promise<{
-    id: string;
-    email: string;
-    access_token: string;
-  }> {
+  async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
     try {
       const user = await this.usersService.login(loginDto);
       return user;
@@ -128,25 +125,6 @@ export class UsersController {
       throw error;
     }
   }
-
-  /*
-GET /users/:id/meal-vouchers/:month
-
-Speech client : En tant qu'employé, je dois pouvoir voir le montant accordé en
-titres restaurant par l'entreprise pour un mois donné afin d'éviter des erreurs
-comptables dans le calculs des titres restaurants.
-
-Critères d'acceptation : Étant donné que je suis un employé et que je travaille
-du Lundi au Vendredi sans interruption, et ce, même les jours féries, lorsque
-je demande mon montant de titres restaurant pour un mois donné alors le système
-me donne ce montant selon le calcul suivant : l'entreprise accorde 8 euros de
-titres restaurants par jour travaillé par employé et les employés n'ont pas le
-droit aux titres restaurants les jours de télétravail ou de congés payés
-
-Parametres (query) :
-id!: string; //au format uuidv4
-month!: number; //nombres de 1 (Janvier) à 12 (Decembre)
-*/
 
   @Get(':id/meal-vouchers/:month')
   async getMealVouchers(

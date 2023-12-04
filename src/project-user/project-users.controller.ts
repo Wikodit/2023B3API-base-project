@@ -3,16 +3,13 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
-  Delete,
   Req,
   UnauthorizedException,
   NotFoundException,
 } from '@nestjs/common';
 import { ProjectUsersService } from './project-users.service';
 import { CreateProjectUsersDto } from './dto/create-project-users.dto';
-import { UpdateProjectUsersDto } from './dto/update-project-users.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from '../users/dto/user-response-dto';
 import { UserRoleEnum } from '../users/entities/types/user.role.enum';
@@ -26,9 +23,9 @@ import { ProjectUsersResponseAdminDto } from './dto/project-users-response-admin
 export class ProjectUsersController {
   constructor(
     private readonly projectUsersService: ProjectUsersService,
+
     public usersService: UsersService,
   ) {}
-
   @Post()
   async create(
     @Req() req,
@@ -49,7 +46,20 @@ export class ProjectUsersController {
       throw error;
     }
   }
-
+  @Get(':id')
+  async findOne(
+    @Req() req,
+    @Param('id') id: string,
+  ): Promise<ProjectUsersResponseDto> {
+    try {
+      const user: UserResponseDto = await this.usersService.findOne(
+        req.user.sub,
+      );
+      return this.projectUsersService.findOne(id, user);
+    } catch (error) {
+      throw error;
+    }
+  }
   @Get()
   async findAll(@Req() req): Promise<ProjectReponsePartialDto[]> {
     try {
@@ -76,33 +86,5 @@ export class ProjectUsersController {
         return projectUser;
       }
     } catch (error) {}
-  }
-
-  @Get(':id')
-  async findOne(
-    @Req() req,
-    @Param('id') id: string,
-  ): Promise<ProjectUsersResponseDto> {
-    try {
-      const user: UserResponseDto = await this.usersService.findOne(
-        req.user.sub,
-      );
-      return this.projectUsersService.findOne(id, user);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateProjectUserDto: UpdateProjectUsersDto,
-  ) {
-    return this.projectUsersService.update(+id, updateProjectUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.projectUsersService.remove(+id);
   }
 }

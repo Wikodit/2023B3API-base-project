@@ -8,7 +8,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
 import { UsersService } from '../users/users.service';
 import { Repository } from 'typeorm';
 import { Project } from './entities/project.entity';
@@ -31,8 +30,8 @@ export class ProjectsService {
   ) {}
 
   async create(
-    referringEmployeeId,
-    userRole,
+    referringEmployeeId: string,
+    userRole: string,
     createProjectDto: CreateProjectDto,
   ): Promise<ProjectResponseDto> {
     try {
@@ -64,47 +63,6 @@ export class ProjectsService {
       }
     }
   }
-  async findAllForAdmin(): Promise<ProjectReponsePartialDto[]> {
-    try {
-      const projects: Project[] = await this.projectsRepository.find();
-      const mappedProjects: ProjectReponsePartialDto[] = projects.map(
-        (project: ProjectResponseDto) => {
-          return {
-            ...project,
-          };
-        },
-      );
-      return mappedProjects;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async findAll(query?: any): Promise<ProjectResponseDto[]> {
-    try {
-      const projects: ProjectResponseDto[] =
-        await this.projectsRepository.find(query);
-
-      const projectPromises: Promise<ProjectResponseDto>[] = projects.map(
-        async (project: ProjectResponseDto) => {
-          const user: UserResponseDto = await this.usersService.findOne(
-            project.referringEmployeeId,
-          );
-          return {
-            ...project,
-            referringEmployee: user,
-          };
-        },
-      );
-
-      const projectResults: ProjectResponseDto[] =
-        await Promise.all(projectPromises);
-      return projectResults;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   async findOne(
     id: string,
     user: UserResponseDto,
@@ -128,6 +86,44 @@ export class ProjectsService {
         throw new ForbiddenException('Project not found');
       }
       throw new ForbiddenException('Project not found');
+    } catch (error) {
+      throw error;
+    }
+  }
+  async findAllForAdmin(): Promise<ProjectReponsePartialDto[]> {
+    try {
+      const projects: Project[] = await this.projectsRepository.find();
+      const mappedProjects: ProjectReponsePartialDto[] = projects.map(
+        (project: ProjectResponseDto) => {
+          return {
+            ...project,
+          };
+        },
+      );
+      return mappedProjects;
+    } catch (error) {
+      throw error;
+    }
+  }
+  async findAll(query?: any): Promise<ProjectResponseDto[]> {
+    try {
+      const projects: ProjectResponseDto[] =
+        await this.projectsRepository.find(query);
+
+      const projectPromises: Promise<ProjectResponseDto>[] = projects.map(
+        async (project: ProjectResponseDto) => {
+          const user: UserResponseDto = await this.usersService.findOne(
+            project.referringEmployeeId,
+          );
+          return {
+            ...project,
+            referringEmployee: user,
+          };
+        },
+      );
+      const projectResults: ProjectResponseDto[] =
+        await Promise.all(projectPromises);
+      return projectResults;
     } catch (error) {
       throw error;
     }
@@ -176,13 +172,5 @@ export class ProjectsService {
         description: 'Some error description',
       });
     }
-  }
-
-  update(id: number, updateProjectDto: UpdateProjectDto) {
-    return `This action updates a #${id} project`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} project`;
   }
 }

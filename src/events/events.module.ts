@@ -6,7 +6,6 @@ import { Event } from './entities/event.entity';
 import { UsersModule } from '../users/users.module';
 import { ProjectUsersModule } from '../project-user/project-users.module';
 import { ProjectsModule } from '../projects/projects.module';
-
 @Module({
   imports: [
     ProjectUsersModule,

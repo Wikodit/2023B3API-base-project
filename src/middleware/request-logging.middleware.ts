@@ -5,7 +5,6 @@ import * as fs from 'fs';
 @Injectable()
 export class RequestLoggingMiddleware implements NestMiddleware {
   private readonly logFile = './logs/logs.txt';
-  //Revoir pour params
   use(req: Request, res: Response, next: NextFunction) {
     const ip: string = req.ip;
     const route: string = req.originalUrl;

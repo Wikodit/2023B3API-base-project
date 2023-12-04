@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Project } from './entities/project.entity';
 import { UsersModule } from '../users/users.module';
 import { ProjectUsersModule } from '../project-user/project-users.module';
-
 @Module({
   imports: [
     forwardRef(() => UsersModule),

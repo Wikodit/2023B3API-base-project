@@ -1,29 +1,22 @@
 import { UserResponseDto } from '../../users/dto/user-response-dto';
 import { ProjectResponseDto } from '../../projects/dto/project-response-dto';
+import { IsNotEmpty } from 'class-validator';
 
 export class ProjectUsersResponseAdminDto {
+  @IsNotEmpty()
   id: string;
+
+  @IsNotEmpty()
   startDate: Date;
+
+  @IsNotEmpty()
   endDate: Date;
+
+  @IsNotEmpty()
   userId: string;
+
+  @IsNotEmpty()
   projectId: string;
   user: UserResponseDto;
   project: ProjectResponseDto;
-  constructor(
-    id: string,
-    startDate: Date,
-    endDate: Date,
-    userId: string,
-    projectId: string,
-    user: UserResponseDto,
-    project: ProjectResponseDto,
-  ) {
-    this.id = id;
-    this.startDate = startDate;
-    this.endDate = endDate;
-    this.userId = userId;
-    this.projectId = projectId;
-    this.user = user;
-    this.project = project;
-  }
 }

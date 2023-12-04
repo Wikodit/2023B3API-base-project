@@ -7,11 +7,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateProjectUsersDto } from './dto/create-project-users.dto';
-import { UpdateProjectUsersDto } from './dto/update-project-users.dto';
 import { ProjectUser } from './entities/project-user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
-  Between,
   FindManyOptions,
   LessThanOrEqual,
   MoreThanOrEqual,
@@ -24,15 +22,15 @@ import { ProjectsService } from '../projects/projects.service';
 import { ProjectResponseDto } from '../projects/dto/project-response-dto';
 import { ProjectUsersResponseAdminDto } from './dto/project-users-response-admin.dto';
 import { ProjectReponsePartialDto } from '../projects/dto/project-reponse-partial.dto';
-import { Project } from '../projects/entities/project.entity';
-
 @Injectable()
 export class ProjectUsersService {
   constructor(
     @InjectRepository(ProjectUser)
     public projectUsersRepository: Repository<ProjectUser>,
+
     @Inject(UsersService)
     public usersService: UsersService,
+
     @Inject(forwardRef(() => ProjectsService))
     public projectsService: ProjectsService,
   ) {}
@@ -58,10 +56,8 @@ export class ProjectUsersService {
         await this.projectUsersRepository.find({
           where: { userId: userAssigned.id },
         });
-
       const startDateNewPro: number = new Date(projectUser.startDate).getTime();
       const endDateNewPro: number = new Date(projectUser.endDate).getTime();
-
       userProjects.forEach((project: ProjectUser) => {
         const userProjectDate = {
           startDate: `${project.startDate.getTime()}`,
@@ -104,88 +100,6 @@ export class ProjectUsersService {
       throw error;
     }
   }
-  async employeeFindAll(
-    userRequest: UserResponseDto,
-  ): Promise<ProjectUsersResponseDto[]> {
-    try {
-      const userRequestId: string = userRequest.id;
-      const usersProjectsAssigned: ProjectUsersResponseDto[] =
-        await this.projectUsersRepository.find({
-          where: { userId: userRequestId },
-        });
-      if (usersProjectsAssigned[0] === null) {
-        throw new ForbiddenException('No project for this user');
-      } else {
-        return usersProjectsAssigned;
-      }
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async projectManagerGetDate(
-    userId: string,
-    eventToValid: Date,
-  ): Promise<ProjectUser> {
-    try {
-      const options: FindManyOptions<ProjectUser> = {
-        where: {
-          startDate: LessThanOrEqual(eventToValid),
-          endDate: MoreThanOrEqual(eventToValid),
-          project: {
-            referringEmployeeId: userId,
-          },
-        },
-        relations: ['project'],
-      };
-      const projectUsers: ProjectUser =
-        await this.projectUsersRepository.findOne(options);
-      return projectUsers;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async employeeFindAllOwnProjects(
-    userRequest: UserResponseDto,
-  ): Promise<ProjectReponsePartialDto[]> {
-    try {
-      const userRequestId: string = userRequest.id;
-      const usersProjectsAssigned: ProjectUsersResponseDto[] =
-        await this.projectUsersRepository.find({
-          where: { userId: userRequestId },
-        });
-      if (usersProjectsAssigned[0] === null) {
-        throw new ForbiddenException('No project for this user');
-      } else {
-        const projectOwnUserArr: ProjectReponsePartialDto[] = [];
-        for (const projectUser of usersProjectsAssigned) {
-          const projectOwnUser: ProjectReponsePartialDto =
-            await this.projectsService.findOne(
-              projectUser.projectId,
-              userRequest,
-            );
-          projectOwnUserArr.push({
-            id: projectOwnUser.id,
-            name: projectOwnUser.name,
-            referringEmployeeId: projectOwnUser.referringEmployeeId,
-          });
-        }
-        return projectOwnUserArr;
-      }
-    } catch (error) {
-      throw error;
-    }
-  }
-  async managerAndAdminfindAll(): Promise<ProjectReponsePartialDto[] | void> {
-    try {
-      const projectList: ProjectReponsePartialDto[] =
-        await this.projectsService.findAllForAdmin();
-      return projectList;
-    } catch (error) {
-      throw error;
-    }
-  }
   async findOne(
     id: string,
     userRequest: UserResponseDto,
@@ -219,7 +133,86 @@ export class ProjectUsersService {
       throw error;
     }
   }
-
+  async employeeFindAll(
+    userRequest: UserResponseDto,
+  ): Promise<ProjectUsersResponseDto[]> {
+    try {
+      const userRequestId: string = userRequest.id;
+      const usersProjectsAssigned: ProjectUsersResponseDto[] =
+        await this.projectUsersRepository.find({
+          where: { userId: userRequestId },
+        });
+      if (usersProjectsAssigned.length === 0) {
+        throw new ForbiddenException('No project for this user');
+      } else {
+        return usersProjectsAssigned;
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+  async projectManagerGetDate(
+    userId: string,
+    eventToValid: Date,
+  ): Promise<ProjectUser> {
+    try {
+      const options: FindManyOptions<ProjectUser> = {
+        where: {
+          startDate: LessThanOrEqual(eventToValid),
+          endDate: MoreThanOrEqual(eventToValid),
+          project: {
+            referringEmployeeId: userId,
+          },
+        },
+        relations: ['project'],
+      };
+      const projectUsers: ProjectUser =
+        await this.projectUsersRepository.findOne(options);
+      return projectUsers;
+    } catch (error) {
+      throw error;
+    }
+  }
+  async employeeFindAllOwnProjects(
+    userRequest: UserResponseDto,
+  ): Promise<ProjectReponsePartialDto[]> {
+    try {
+      const userRequestId: string = userRequest.id;
+      const usersProjectsAssigned: ProjectUsersResponseDto[] =
+        await this.projectUsersRepository.find({
+          where: { userId: userRequestId },
+        });
+      if (usersProjectsAssigned.length === 0) {
+        throw new ForbiddenException('No project for this user');
+      } else {
+        const projectOwnUserArr: ProjectReponsePartialDto[] = [];
+        for (const projectUser of usersProjectsAssigned) {
+          const projectOwnUser: ProjectReponsePartialDto =
+            await this.projectsService.findOne(
+              projectUser.projectId,
+              userRequest,
+            );
+          projectOwnUserArr.push({
+            id: projectOwnUser.id,
+            name: projectOwnUser.name,
+            referringEmployeeId: projectOwnUser.referringEmployeeId,
+          });
+        }
+        return projectOwnUserArr;
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+  async managerAndAdminfindAll(): Promise<ProjectReponsePartialDto[] | void> {
+    try {
+      const projectList: ProjectReponsePartialDto[] =
+        await this.projectsService.findAllForAdmin();
+      return projectList;
+    } catch (error) {
+      throw error;
+    }
+  }
   async findOneByDateAndUser(date: Date, userId: string): Promise<ProjectUser> {
     try {
       const projectUser = await this.projectUsersRepository.findOne({
@@ -229,41 +222,14 @@ export class ProjectUsersService {
           endDate: MoreThanOrEqual(date),
         },
       });
-
       if (!projectUser) {
         throw new NotFoundException(
           'No project found for this user on this date',
         );
       }
-
       return projectUser;
     } catch (error) {
       throw error;
     }
-  }
-  /*
-  async getProjectForUserOnDate(userId: string, date: Date): Promise<Project> {
-    const projectUser = await this.projectUsersRepository.findOne({
-      where: {
-        userId,
-        startDate: Between(date, date),
-      },
-    });
-
-    if (!projectUser) {
-      throw new NotFoundException(
-        'No project found for this user on this date',
-      );
-    }
-
-    return this.projectsService.findOne(projectUser.projectId);
-  }
-   */
-  update(id: number, updateProjectUsersDto: UpdateProjectUsersDto) {
-    return `This action updates a #${id} projectUser`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} projectUser`;
   }
 }

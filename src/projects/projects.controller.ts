@@ -1,19 +1,16 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Inject,
   NotFoundException,
   Param,
-  Patch,
   Post,
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
 import { UsersService } from '../users/users.service';
 import { ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from '../users/dto/user-response-dto';
@@ -55,7 +52,27 @@ export class ProjectsController {
       throw error;
     }
   }
-
+  @Get(':id')
+  async findOne(
+    @Req() req,
+    @Param('id') id: string,
+  ): Promise<Promise<CreateProjectDto> | string> {
+    try {
+      const user: UserResponseDto = await this.usersService.findOne(
+        req.user.sub,
+      );
+      const project: ProjectResponseDto = await this.projectsService.findOne(
+        id,
+        user,
+      );
+      if (!project) {
+        throw new NotFoundException('Project not found');
+      }
+      return project;
+    } catch (error) {
+      throw error;
+    }
+  }
   @Get()
   async findAll(
     @Req() req,
@@ -76,34 +93,5 @@ export class ProjectsController {
     } catch (error) {
       throw error;
     }
-  }
-
-  @Get(':id')
-  async findOne(
-    @Req() req,
-    @Param('id') id: string,
-  ): Promise<Promise<CreateProjectDto> | string> {
-    try {
-      const user: UserResponseDto = await this.usersService.findOne(
-        req.user.sub,
-      );
-      const project = await this.projectsService.findOne(id, user);
-      if (!project) {
-        throw new NotFoundException('Project not found');
-      }
-      return project;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {
-    return this.projectsService.update(+id, updateProjectDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.projectsService.remove(+id);
   }
 }

@@ -1,23 +1,14 @@
 import { UserResponseDto } from '../../users/dto/user-response-dto';
 import { ProjectUser } from '../../project-user/entities/project-user.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ProjectResponseDto {
+  @ApiProperty({ type: String })
   id: string;
+  @ApiProperty({ type: String })
   name: string;
+  @ApiProperty({ type: String })
   referringEmployeeId: string;
   referringEmployee: UserResponseDto;
   projectUser?: ProjectUser[];
-  constructor(
-    id: string,
-    name: string,
-    referringEmployeeId: string,
-    referringEmployee: UserResponseDto,
-    projectUser: ProjectUser[],
-  ) {
-    this.id = id;
-    this.name = name;
-    this.referringEmployeeId = referringEmployeeId;
-    this.referringEmployee = referringEmployee;
-    this.projectUser = projectUser;
-  }
 }

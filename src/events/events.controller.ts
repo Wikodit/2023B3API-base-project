@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
-import { UpdateEventDto } from './dto/update-event.dto';
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { EventResponseDto } from './dto/event-response.dto';
 import { UsersService } from '../users/users.service';
@@ -29,8 +28,10 @@ import { ProjectUser } from '../project-user/entities/project-user.entity';
 export class EventsController {
   constructor(
     private readonly eventsService: EventsService,
+
     @Inject(UsersService)
     private readonly usersService: UsersService,
+
     @Inject(ProjectUsersService)
     private readonly projectUsersService: ProjectUsersService,
   ) {}
@@ -196,13 +197,5 @@ export class EventsController {
     } catch (error) {
       throw error;
     }
-  }
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
-    return this.eventsService.update(+id, updateEventDto);
-  }
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.eventsService.remove(+id);
   }
 }
