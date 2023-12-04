@@ -1,10 +1,13 @@
-import { IsString, IsUUID } from 'class-validator'
+import { IsNotEmpty, IsString, IsUUID, MinLength } from 'class-validator'
 
 export class ProjectCreateDto {
   @IsString()
-  public name: string
+  @IsNotEmpty()
+  @MinLength(3)
+  readonly name!: string
 
   @IsString()
+  @IsNotEmpty()
   @IsUUID('4')
-  public referringEmployeeId: string
+  readonly referringEmployeeId!: string
 }

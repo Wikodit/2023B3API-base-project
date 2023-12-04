@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config'
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { cors: true })
-
   const cfgService = app.get<ConfigService>(ConfigService)
   const config = new DocumentBuilder()
     .setTitle('Swagger')

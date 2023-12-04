@@ -9,20 +9,20 @@ import {
 import { UserRole } from '../entity/user.entity'
 
 export class UserSignUpDto {
-  @MinLength(3)
   @IsNotEmpty()
   @IsString()
+  @MinLength(3)
   readonly username!: string
 
-  @IsEmail()
   @IsString()
   @IsNotEmpty()
+  @IsEmail()
   readonly email!: string
 
   /** Plain password **/
-  @MinLength(8)
   @IsString()
   @IsNotEmpty()
+  @MinLength(8)
   readonly password!: string
 
   @IsOptional()

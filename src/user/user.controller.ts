@@ -1,6 +1,5 @@
 import {
   Controller,
-  Req,
   Get,
   UseInterceptors,
   UseGuards,
@@ -10,30 +9,30 @@ import {
 } from '@nestjs/common'
 import { UserService } from './user.service'
 import { User } from '../entity/user.entity'
-import { PasswordInterceptor } from '../interceptor/password.interceptor'
+import { TransformInterceptor } from '../interceptor/transform.interceptor'
 import { AuthGuard } from '../guard/auth.guard'
-import { RequestWithUser } from '../types'
+import { CurrentUser } from '../decorator/current-user.decorator'
 
 @UseGuards(AuthGuard)
+@UseInterceptors(TransformInterceptor)
 @Controller('/users')
 export class UserController {
   constructor(private readonly users: UserService) {}
 
-  @UseInterceptors(PasswordInterceptor)
   @Get('/me')
-  public async me(@Req() req: RequestWithUser): Promise<User> {
-    return req.user
+  public async getMe(@CurrentUser() user: User): Promise<User> {
+    return user
   }
 
-  @UseInterceptors(PasswordInterceptor)
   @Get()
-  public async root(): Promise<User[]> {
+  public async getUsers(): Promise<User[]> {
     return this.users.findAll()
   }
 
-  @UseInterceptors(PasswordInterceptor)
   @Get('/:uuid')
-  public async user(@Param('uuid', ParseUUIDPipe) uuid: string): Promise<User> {
+  public async getUserById(
+    @Param('uuid', ParseUUIDPipe) uuid: string
+  ): Promise<User> {
     const user = await this.users.findById(uuid)
     if (user) return user
 

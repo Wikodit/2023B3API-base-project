@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'
+import { Project } from './project.entity'
+import { Exclude } from 'class-transformer'
 
 export enum UserRole {
   EMPLOYEE = 'Employee',
@@ -18,8 +20,12 @@ export class User {
   email!: string
 
   @Column({ nullable: false })
+  @Exclude({ toPlainOnly: true })
   password!: string
 
   @Column({ enum: UserRole, default: UserRole.EMPLOYEE })
   role!: UserRole
+
+  @OneToMany(() => Project, p => p.referringEmployee, { nullable: false })
+  projects!: Project[]
 }

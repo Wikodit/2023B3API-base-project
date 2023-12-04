@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module'
 import { User } from './entity/user.entity'
 import { ProjectModule } from './project/project.module'
 import { AuthModule } from './user/auth/auth.module'
+import { ProjectUserModule } from './project/project-user/project-user.module'
 
 @Module({
   imports: [
@@ -25,8 +26,9 @@ import { AuthModule } from './user/auth/auth.module'
       inject: [ConfigService]
     }),
     UserModule,
+    AuthModule,
     ProjectModule,
-    AuthModule
+    //ProjectUserModule
   ],
   providers: [],
   exports: [],

@@ -4,9 +4,9 @@ export class UserSignInDto {
   @IsNotEmpty()
   @IsString()
   @IsEmail()
-  public email: string
+  readonly email!: string
 
   @IsNotEmpty()
   @IsString()
-  public password: string
+  readonly password!: string
 }

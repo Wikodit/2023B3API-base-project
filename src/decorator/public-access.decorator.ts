@@ -1,8 +1,6 @@
-import { SetMetadata } from '@nestjs/common'
-
-export const META_PUBLIC_ACCESS_KEY = '__public_access__'
+import { Reflector } from '@nestjs/core'
 
 /**
  * Decorate controller or route handler with it to disable authentication guards
  */
-export const PublicAccess = () => SetMetadata(META_PUBLIC_ACCESS_KEY, true)
+export const PublicAccess = Reflector.createDecorator<boolean>()

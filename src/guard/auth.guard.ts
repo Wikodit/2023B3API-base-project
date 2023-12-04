@@ -9,8 +9,10 @@ import {
 import { Reflector } from '@nestjs/core'
 import { Request } from 'express'
 import { AuthService } from '../user/auth/auth.service'
-import { META_PUBLIC_ACCESS_KEY } from '../decorator/public-access.decorator'
 import { UserService } from '../user/user.service'
+import { UserRole } from '../entity/user.entity'
+import { PublicAccess } from '../decorator/public-access.decorator'
+import { Roles } from '../decorator/roles.decorator'
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -22,14 +24,17 @@ export class AuthGuard implements CanActivate {
     private readonly reflector: Reflector
   ) {}
 
+  // Return false => 403 Forbidden
+  // Return true  => Continue...
+  // Throw UnauthorizeException => 401 Unauthorized
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const publicAccess = this.reflector.getAllAndOverride<boolean>(
-      META_PUBLIC_ACCESS_KEY,
+      PublicAccess,
       [context.getClass(), context.getHandler()]
     )
 
-    // Handler or controller is decorated using @PublicAccess,
-    // no authentication required.
+    // Decorating a route handler or a controller class using @PublicAccess will
+    // disable authentication process for decorated member
     if (publicAccess) return true
     const req: Request = context.switchToHttp().getRequest()
 
@@ -39,25 +44,34 @@ export class AuthGuard implements CanActivate {
       if (token) {
         const payload = await this.auth.verifyToken(token)
         
-        if (payload) {
+        if (payload && payload.sub) {
           const user = await this.users.findById(payload.sub)
           
           if (user) {
+            const roles = this.reflector.getAllAndOverride<UserRole[]>(
+              Roles,
+              [context.getClass(), context.getHandler()]
+            )
+
+            if (roles && !roles.includes(user.role)) throw new UnauthorizedException()
+            // Token and user are valid, injecting user to request object
             req['user'] = user
-            
             return true
           }
         }
       }
     }
 
-    // Invalid token, Http 401 Unauthorized
+    // Invalid token or permission level too low, Http 401 Unauthorized
     throw new UnauthorizedException()
   }
 }
 
+/**
+ * Helper for extracting JWT from request authorization header.
+ */
 function extractJwtFromHeader(authorizationHeader: string): string | null {
   const [type, token] = authorizationHeader.split(' ')
 
-  return type?.toLowerCase() === 'bearer' && token ? token : null
+  return type?.toLowerCase() === 'bearer' ? token : null
 }

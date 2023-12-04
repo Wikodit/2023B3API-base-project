@@ -35,7 +35,7 @@ export class UserService {
   }
 
   /**
-   * Return the user matching to the given crendentials or null.
+   * Return the user matching to the given crendentials, otherwise null.
    */
   public async findUserFromCrendentials(dto: UserSignInDto): Promise<User | null> {
     const user = await this.repository.findOneBy({ email: dto.email })
@@ -49,6 +49,6 @@ export class UserService {
    * Return all users
    */
   public async findAll(): Promise<User[]> {
-    return this.repository.find()
+    return this.repository.find(/*{ relations: ['projects'] }*/)
   }
 }
