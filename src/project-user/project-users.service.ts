@@ -219,6 +219,28 @@ export class ProjectUsersService {
       throw error;
     }
   }
+
+  async findOneByDateAndUser(date: Date, userId: string): Promise<ProjectUser> {
+    try {
+      const projectUser = await this.projectUsersRepository.findOne({
+        where: {
+          userId,
+          startDate: LessThanOrEqual(date),
+          endDate: MoreThanOrEqual(date),
+        },
+      });
+
+      if (!projectUser) {
+        throw new NotFoundException(
+          'No project found for this user on this date',
+        );
+      }
+
+      return projectUser;
+    } catch (error) {
+      throw error;
+    }
+  }
   /*
   async getProjectForUserOnDate(userId: string, date: Date): Promise<Project> {
     const projectUser = await this.projectUsersRepository.findOne({

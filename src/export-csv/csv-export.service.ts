@@ -5,6 +5,8 @@ import { ProjectsService } from '../projects/projects.service';
 import { createObjectCsvWriter } from 'csv-writer';
 import { EventResponseDto } from '../events/dto/event-response.dto';
 import { UserResponseDto } from '../users/dto/user-response-dto';
+import { ProjectUsersService } from '../project-user/project-users.service';
+import * as cron from 'node-cron';
 
 @Injectable()
 export class CsvExportService {
@@ -12,7 +14,16 @@ export class CsvExportService {
     private readonly usersService: UsersService,
     private readonly eventsService: EventsService,
     private readonly projectsService: ProjectsService,
-  ) {}
+    private readonly projectUsersService: ProjectUsersService,
+  ) {
+    //Génération automatique du fichier csv le 25 de chaque mois
+    //Afin de tester cette fonctionnalité, remplacer par '*/1 * * * *'
+    //pour générer le fichier toutes les minutes
+    cron.schedule('0 0 25 * *', async () => {
+      console.log('Running csv export task');
+      await this.exportCsvForCurrentMonth();
+    });
+  }
   async exportCsvForCurrentMonth() {
     try {
       const events: EventResponseDto[] =
@@ -22,28 +33,28 @@ export class CsvExportService {
           const user: UserResponseDto = await this.usersService.findOne(
             event.userId,
           );
-          /*
+          const projectUser =
+            await this.projectUsersService.findOneByDateAndUser(
+              new Date(event.date),
+              event.userId,
+            );
           const project = await this.projectsService.findOne(
-            event.,
+            projectUser.projectId,
             user,
           );
-           */
           return {
             UserName: user.username,
-            ProjectName: event.project.name,
+            ProjectName: project.name,
           };
         }),
       );
-
       const csvWriter = createObjectCsvWriter({
-        path: 'conges_acceptes.csv', // Spécifiez le nom du fichier
+        path: 'conges_acceptes.csv', // Specify the file name
         header: [
-          { id: 'UserName', title: 'User Name' },
-          { id: 'ProjectName', title: 'Project Name' },
-          // Ajoutez des en-têtes pour d'autres propriétés
+          { id: 'UserName', title: "Nom d'utilisateur" },
+          { id: 'ProjectName', title: 'Nom du projet' },
         ],
       });
-
       await csvWriter.writeRecords(data);
     } catch (error) {
       throw error;

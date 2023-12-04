@@ -15,6 +15,7 @@ import { ProjectUser } from './project-user/entities/project-user.entity';
 import { EventsModule } from './events/events.module';
 import { Event } from './events/entities/event.entity';
 import { RequestLoggingMiddleware } from './middleware/request-logging.middleware';
+import { CsvExportModule } from './export-csv/csv-export.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { RequestLoggingMiddleware } from './middleware/request-logging.middlewar
       }),
       inject: [ConfigService],
     }),
+    CsvExportModule,
     UsersModule,
     ProjectsModule,
     ProjectUsersModule,

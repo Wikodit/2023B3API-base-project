@@ -104,7 +104,7 @@ export class EventsService {
       const options: FindManyOptions<Event> = {
         where: {
           date: Between(
-            firstDayOfMonth.toISOString().slice(0, 10), // Convertir en chaîne de caractères au format ISO
+            firstDayOfMonth.toISOString().slice(0, 10),
             lastDayOfMonth.toISOString().slice(0, 10),
           ),
           eventStatus: EventStatusEnum.Accepted,
