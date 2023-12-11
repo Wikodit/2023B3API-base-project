@@ -119,7 +119,7 @@ export class ProjectsUsersService {
       name: projectUser.project.name,
       referringEmployeeId: projectUser.project.referringEmployeeId,
       referringEmployee: {
-        id: projectUser.user.id,
+        id: projectUser.user.id ,
         username: projectUser.user.username,
         email: projectUser.user.email,
         role: projectUser.user.role,
