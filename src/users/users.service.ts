@@ -39,14 +39,14 @@ export class UsersService {
     };
     const user = await this.userRepository.findOne(options);
     // compare mdp bdd et user
-    console.log('compare ', loginUserDto.password, user.password, user)
+    //console.log('compare ', loginUserDto.password, user.password, user)
     const match = await bcrypt.compare(loginUserDto.password, user.password);
     if (!match) {
       throw new UnauthorizedException(); // retounre une erreur si le mdp de correspond pas 
     }
     // génération du tokken
     const tokken = { sub: user.id, email: user.email, role: user.role };
-    console.log(this.jwtService)
+    //console.log(this.jwtService)
     return {
       access_token: await this.jwtService.signAsync(tokken),
     };

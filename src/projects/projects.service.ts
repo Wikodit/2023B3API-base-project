@@ -34,7 +34,7 @@ export class ProjectsService {
       relations: {
         referringEmployee: true
       },
-      select: ['name']
+      
     })
   
     return projects;
