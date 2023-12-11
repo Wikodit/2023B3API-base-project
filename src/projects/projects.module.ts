@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import Project from './entities/project.entity';
 import { ProjectsUsersModule } from '../project-user/project-user.module';
 import { UsersModule } from '../users/users.module';
-import { AuthModule } from '../auth/auth.module';
 
 
 @Module({
@@ -13,7 +12,6 @@ import { AuthModule } from '../auth/auth.module';
     TypeOrmModule.forFeature([Project]),
     forwardRef(() => ProjectsUsersModule),
     forwardRef(() => UsersModule),
-    AuthModule
   ],
   controllers: [
     ProjectsController,

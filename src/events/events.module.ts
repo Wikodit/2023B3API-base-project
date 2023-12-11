@@ -5,14 +5,12 @@ import { EventsController } from './events.controller';
 import { EventsService } from './events.service';
 import { ProjectsUsersModule } from '../project-user/project-user.module';
 import { UsersModule } from '../users/users.module';
-import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Event]),
     forwardRef(() => ProjectsUsersModule),
     forwardRef(()=> UsersModule),
-    AuthModule
   ],
   controllers: [
     EventsController,

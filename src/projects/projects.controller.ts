@@ -35,11 +35,6 @@ export class ProjectsController {
     const user = await this.userService.returnUser(
       createProjectDto.referringEmployeeId,
     );
-
-
-
-
-    
     if (user.role == 'Admin' || user.role == 'ProjectManager') {
       const project = await this.projectService.create(createProjectDto);
       if (project) {
