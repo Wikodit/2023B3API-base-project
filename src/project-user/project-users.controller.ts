@@ -16,7 +16,6 @@ import { UserRoleEnum } from '../users/entities/types/user.role.enum';
 import { UsersService } from '../users/users.service';
 import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
 import { ProjectUser } from './entities/project-user.entity';
-import { ProjectReponsePartialDto } from '../projects/dto/project-reponse-partial.dto';
 import { ProjectUsersResponseAdminDto } from './dto/project-users-response-admin.dto';
 
 @ApiTags('Project-Users')
@@ -65,13 +64,13 @@ export class ProjectUsersController {
   }
 
   @Get()
-  async findAll(@Req() req): Promise<ProjectReponsePartialDto[]> {
+  async findAll(@Req() req): Promise<ProjectUsersResponseDto[]> {
     try {
       const userRequest: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
       const userRole: string = userRequest.role;
-      let projectUser: void | ProjectReponsePartialDto[];
+      let projectUser: ProjectUsersResponseDto[];
       if (userRole === 'Admin' || userRole === 'ProjectManager') {
         projectUser = await this.projectUsersService.managerAndAdminfindAll();
       }

@@ -158,38 +158,26 @@ export class ProjectUsersService {
 
   async employeeFindAllOwnProjects(
     userRequest: UserResponseDto,
-  ): Promise<ProjectReponsePartialDto[]> {
-    const userRequestId: string = userRequest.id;
+  ): Promise<ProjectUsersResponseDto[]> {
     const usersProjectsAssigned: ProjectUsersResponseDto[] =
       await this.projectUsersRepository.find({
-        where: { userId: userRequestId },
+        where: { userId: userRequest.id },
       });
     if (usersProjectsAssigned.length === 0) {
       throw new ForbiddenException('No project for this user');
-    } else {
-      const projectOwnUserArr: ProjectReponsePartialDto[] = [];
-      for (const projectUser of usersProjectsAssigned) {
-        const projectOwnUser: ProjectReponsePartialDto =
-          await this.projectsService.findOne(
-            projectUser.projectId,
-            userRequest,
-          );
-        projectOwnUserArr.push({
-          id: projectOwnUser.id,
-          name: projectOwnUser.name,
-          referringEmployeeId: projectOwnUser.referringEmployeeId,
-        });
-      }
-      return projectOwnUserArr;
     }
+    return usersProjectsAssigned;
   }
 
-  async managerAndAdminfindAll(): Promise<ProjectReponsePartialDto[] | void> {
-    return await this.projectsService.findAllForAdmin();
+  async managerAndAdminfindAll(): Promise<ProjectUser[]> {
+    const resultProject: ProjectUser[] =
+      await this.projectUsersRepository.find();
+    console.log(resultProject);
+    return await this.projectUsersRepository.find();
   }
 
   async findOneByDateAndUser(date: Date, userId: string): Promise<ProjectUser> {
-    const projectUser = await this.projectUsersRepository.findOne({
+    const projectUser: ProjectUser = await this.projectUsersRepository.findOne({
       where: {
         userId,
         startDate: LessThanOrEqual(date),

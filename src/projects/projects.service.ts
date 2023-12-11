@@ -79,18 +79,6 @@ export class ProjectsService {
     throw new ForbiddenException('Project not found');
   }
 
-  async findAllForAdmin(): Promise<ProjectReponsePartialDto[]> {
-    const projects: Project[] = await this.projectsRepository.find();
-    const mappedProjects: ProjectReponsePartialDto[] = projects.map(
-      (project: ProjectResponseDto) => {
-        return {
-          ...project,
-        };
-      },
-    );
-    return mappedProjects;
-  }
-
   async findAll(query?: any): Promise<ProjectResponseDto[]> {
     const projects: ProjectResponseDto[] =
       await this.projectsRepository.find(query);
