@@ -14,6 +14,7 @@ export class CreateEventDto {
     description: 'Event status enum',
   })
   public eventStatus?: EventStatusEnum;
+
   @ApiProperty({
     enum: EventTypeEnum,
     enumName: 'EventTypeEnum',
@@ -21,11 +22,13 @@ export class CreateEventDto {
     description: 'Event type enum',
   })
   public eventType!: EventTypeEnum;
+
   @ApiProperty({
     example: "This is an event' description",
     description: 'Event Description',
   })
   public eventDescription?: string;
+
   @IsNotEmpty({ message: "User can't be blank" })
   public userId!: string;
 }

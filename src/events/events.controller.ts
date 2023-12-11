@@ -1,16 +1,14 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
-  Delete,
-  NotFoundException,
+  Controller,
+  ForbiddenException,
+  Get,
   Inject,
+  NotFoundException,
+  Param,
+  Post,
   Req,
   UnauthorizedException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -79,15 +77,12 @@ export class EventsController {
           'User already has an event on the same day',
         );
       }
-      const eventCreated: Promise<EventResponseDto> = this.eventsService.create(
-        createEventDto,
-        user.id,
-      );
-      return eventCreated;
+      return this.eventsService.create(createEventDto, user.id);
     } catch (error) {
       throw error;
     }
   }
+
   @Get()
   @ApiOperation({ summary: 'Find all events' })
   //@ApiResponse({ status: HttpStatus.OK, type: EventResponseDto })
@@ -98,6 +93,7 @@ export class EventsController {
       throw error;
     }
   }
+
   @Get(':id')
   @ApiOperation({ summary: 'Find a selected event' })
   @ApiParam({ name: 'id', type: String, description: 'Event ID' })
@@ -140,21 +136,16 @@ export class EventsController {
         if (isSameDate == null) {
           throw new UnauthorizedException("Manager can't validate this event");
         }
-        const updateEvent: UpdateResult = await this.eventsService.acceptEvent(
-          eventToValid.id,
-        );
-        return updateEvent;
+        return await this.eventsService.acceptEvent(eventToValid.id);
       }
       if (user.role === 'Admin') {
-        const updateEvent: UpdateResult = await this.eventsService.acceptEvent(
-          eventToValid.id,
-        );
-        return updateEvent;
+        return await this.eventsService.acceptEvent(eventToValid.id);
       }
     } catch (error) {
       throw error;
     }
   }
+
   @Post(':id/decline')
   @ApiOperation({ summary: 'Validation' })
   async declineOne(@Param('id') id: string, @Req() req): Promise<UpdateResult> {
@@ -183,16 +174,10 @@ export class EventsController {
         if (isSameDate == null) {
           throw new UnauthorizedException("Manager can't validate this event");
         }
-        const updateEvent: UpdateResult = await this.eventsService.declineEvent(
-          eventToValid.id,
-        );
-        return updateEvent;
+        return await this.eventsService.declineEvent(eventToValid.id);
       }
       if (user.role === 'Admin') {
-        const updateEvent: UpdateResult = await this.eventsService.declineEvent(
-          eventToValid.id,
-        );
-        return updateEvent;
+        return await this.eventsService.declineEvent(eventToValid.id);
       }
     } catch (error) {
       throw error;

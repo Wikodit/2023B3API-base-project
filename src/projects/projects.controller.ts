@@ -24,8 +24,10 @@ export class ProjectsController {
   constructor(
     @Inject(UsersService)
     public usersService: UsersService,
+
     private readonly projectsService: ProjectsService,
   ) {}
+
   @Post()
   async create(
     @Req() req,
@@ -52,6 +54,7 @@ export class ProjectsController {
       throw error;
     }
   }
+
   @Get(':id')
   async findOne(
     @Req() req,
@@ -73,6 +76,7 @@ export class ProjectsController {
       throw error;
     }
   }
+
   @Get()
   async findAll(
     @Req() req,

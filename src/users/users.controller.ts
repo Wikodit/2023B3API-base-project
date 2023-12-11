@@ -36,7 +36,6 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
 
-    //@Inject(forwardRef(() => EventsService))
     @Inject(EventsService)
     private eventsService: EventsService,
   ) {}
@@ -65,7 +64,7 @@ export class UsersController {
   @ApiBody({ type: LoginDto })
   async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
     try {
-      const user = await this.usersService.login(loginDto);
+      const user: LoginResponseDto = await this.usersService.login(loginDto);
       return user;
     } catch (error) {
       throw error;
@@ -104,6 +103,7 @@ export class UsersController {
       }
     }
   }
+
   @Get()
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({
@@ -119,7 +119,6 @@ export class UsersController {
         role: user.role,
         email: user.email,
       }));
-
       return usersResponse;
     } catch (error) {
       throw error;
@@ -130,7 +129,7 @@ export class UsersController {
   async getMealVouchers(
     @Param('id') id: string,
     @Param('month') month: number,
-  ) {
+  ): Promise<{ ticketRestaurant: number }> {
     try {
       const firstDayInSelectedMonth = dayjs()
         .month(month - 1)
@@ -153,7 +152,6 @@ export class UsersController {
           firstDayInSelectedMonth,
           lastDayInSelectedMonth,
         );
-      console.log('Events count', eventsCount);
       return { ticketRestaurant: (workingDays - eventsCount) * 8 };
     } catch (error) {
       throw error;

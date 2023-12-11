@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -20,13 +19,13 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+
     private readonly jwtService: JwtService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
-
     const user: User = this.usersRepository.create({
       username: createUserDto.username,
       email: createUserDto.email,
@@ -41,50 +40,36 @@ export class UsersService {
       role: savedUser.role,
     };
   }
+
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
-    try {
-      const user: User = await this.usersRepository.findOne({
-        where: { email: loginDto.email },
-      });
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
-      const passwordMatch = await bcrypt.compare(
-        loginDto.password,
-        user.password,
-      );
-      if (!passwordMatch) {
-        throw new UnauthorizedException('Invalid password');
-      }
-      const payload = { sub: user.id, email: user.email };
-      return {
-        ...user,
-        access_token: await this.jwtService.signAsync(payload),
-      };
-    } catch (error) {
-      throw error;
+    const user: User = await this.usersRepository.findOne({
+      where: { email: loginDto.email },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
+    const passwordMatch = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
+    if (!passwordMatch) {
+      throw new UnauthorizedException('Invalid password');
+    }
+    const payload = { sub: user.id, email: user.email };
+    return {
+      ...user,
+      access_token: await this.jwtService.signAsync(payload),
+    };
   }
 
   async findOne(id: string): Promise<UserResponseDto> {
-    try {
-      return this.usersRepository.findOne({
-        where: { id },
-        select: ['id', 'username', 'role', 'email', 'employeeReferring'],
-      });
-    } catch (error) {
-      throw new BadRequestException('Something bad happened', {
-        cause: new Error(),
-        description: 'Some error description',
-      });
-    }
+    return await this.usersRepository.findOne({
+      where: { id },
+      select: ['id', 'username', 'role', 'email', 'employeeReferring'],
+    });
   }
 
   async findAll(): Promise<UserResponseDto[]> {
-    try {
-      return this.usersRepository.find();
-    } catch (error) {
-      throw error;
-    }
+    return await this.usersRepository.find();
   }
 }

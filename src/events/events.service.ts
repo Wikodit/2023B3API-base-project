@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { EventResponseDto } from './dto/event-response.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, FindManyOptions, Repository } from 'typeorm';
+import { Between, FindManyOptions, Repository, UpdateResult } from 'typeorm';
 import { Event } from './entities/event.entity';
 import { EventStatusEnum } from './entities/types/event.status.enum';
 import { ProjectUsersService } from '../project-user/project-users.service';
@@ -32,83 +32,67 @@ export class EventsService {
       userId: user,
       ...createEventDto,
     });
-    const savedEvent: Event = await this.eventsRepository.save(eventCreate);
-    return savedEvent;
+    return await this.eventsRepository.save(eventCreate);
   }
+
   async findOne(id: string): Promise<EventResponseDto> {
-    try {
-      return await this.eventsRepository.findOne({ where: { id } });
-    } catch (error) {
-      throw error;
-    }
+    return await this.eventsRepository.findOne({ where: { id } });
   }
+
   async findAll(): Promise<EventResponseDto[]> {
-    try {
-      return await this.eventsRepository.find();
-    } catch (error) {
-      throw error;
-    }
+    return await this.eventsRepository.find();
   }
-  async acceptEvent(eventId: string) {
-    const updateEvent = await this.eventsRepository.update(eventId, {
+
+  async acceptEvent(eventId: string): Promise<UpdateResult> {
+    return await this.eventsRepository.update(eventId, {
       eventStatus: EventStatusEnum.Accepted,
     });
-    return updateEvent;
   }
-  async declineEvent(eventId: string) {
-    const declineEvent = await this.eventsRepository.update(eventId, {
+
+  async declineEvent(eventId: string): Promise<UpdateResult> {
+    return await this.eventsRepository.update(eventId, {
       eventStatus: EventStatusEnum.Declined,
     });
-    return declineEvent;
   }
+
   async getEventsEmployeeInSelectedMonth(
     userId: string,
     firstDay: Date,
     lastDay: Date,
   ): Promise<number> {
-    try {
-      const firstDayOfMonth: string = firstDay.toISOString().slice(0, 10);
-      const lastDayOfMonth: string = lastDay.toISOString().slice(0, 10);
-      const options: FindManyOptions<Event> = {
-        where: {
-          userId,
-          date: Between(firstDayOfMonth, lastDayOfMonth),
-          eventStatus: EventStatusEnum.Accepted,
-        },
-      };
-      const eventsCount: number = await this.eventsRepository.count(options);
-      return eventsCount;
-    } catch (error) {
-      throw error;
-    }
+    const firstDayOfMonth: string = firstDay.toISOString().slice(0, 10);
+    const lastDayOfMonth: string = lastDay.toISOString().slice(0, 10);
+    const options: FindManyOptions<Event> = {
+      where: {
+        userId,
+        date: Between(firstDayOfMonth, lastDayOfMonth),
+        eventStatus: EventStatusEnum.Accepted,
+      },
+    };
+    return await this.eventsRepository.count(options);
   }
-  async getAcceptedEventsForCurrentMonth(): Promise<EventResponseDto[]> {
-    try {
-      const currentDate = new Date();
-      const firstDayOfMonth = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        1,
-      );
-      const lastDayOfMonth = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth() + 1,
-        0,
-      );
 
-      const options: FindManyOptions<Event> = {
-        where: {
-          date: Between(
-            firstDayOfMonth.toISOString().slice(0, 10),
-            lastDayOfMonth.toISOString().slice(0, 10),
-          ),
-          eventStatus: EventStatusEnum.Accepted,
-        },
-      };
-      const events: Event[] = await this.eventsRepository.find(options);
-      return events;
-    } catch (error) {
-      throw error;
-    }
+  async getAcceptedEventsForCurrentMonth(): Promise<EventResponseDto[]> {
+    const currentDate: Date = new Date();
+    const firstDayOfMonth: Date = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1,
+    );
+    const lastDayOfMonth: Date = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0,
+    );
+    const options: FindManyOptions<Event> = {
+      where: {
+        date: Between(
+          firstDayOfMonth.toISOString().slice(0, 10),
+          lastDayOfMonth.toISOString().slice(0, 10),
+        ),
+        eventStatus: EventStatusEnum.Accepted,
+      },
+    };
+    return await this.eventsRepository.find(options);
   }
 }

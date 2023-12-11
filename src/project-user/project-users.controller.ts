@@ -18,6 +18,7 @@ import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
 import { ProjectUser } from './entities/project-user.entity';
 import { ProjectReponsePartialDto } from '../projects/dto/project-reponse-partial.dto';
 import { ProjectUsersResponseAdminDto } from './dto/project-users-response-admin.dto';
+
 @ApiTags('Project-Users')
 @Controller('project-users')
 export class ProjectUsersController {
@@ -26,6 +27,7 @@ export class ProjectUsersController {
 
     public usersService: UsersService,
   ) {}
+
   @Post()
   async create(
     @Req() req,
@@ -46,6 +48,7 @@ export class ProjectUsersController {
       throw error;
     }
   }
+
   @Get(':id')
   async findOne(
     @Req() req,
@@ -60,6 +63,7 @@ export class ProjectUsersController {
       throw error;
     }
   }
+
   @Get()
   async findAll(@Req() req): Promise<ProjectReponsePartialDto[]> {
     try {
@@ -67,24 +71,20 @@ export class ProjectUsersController {
         req.user.sub,
       );
       const userRole: string = userRequest.role;
+      let projectUser: void | ProjectReponsePartialDto[];
       if (userRole === 'Admin' || userRole === 'ProjectManager') {
-        const projectUser: void | ProjectReponsePartialDto[] =
-          await this.projectUsersService.managerAndAdminfindAll();
-        if (!projectUser) {
-          throw new NotFoundException('ProjectUser not found');
-        }
-        return projectUser;
+        projectUser = await this.projectUsersService.managerAndAdminfindAll();
       }
       if (userRole === 'Employee') {
-        const projectUser: ProjectReponsePartialDto[] =
+        projectUser =
           await this.projectUsersService.employeeFindAllOwnProjects(
             userRequest,
           );
-        if (!projectUser) {
-          throw new NotFoundException('ProjectUser not found');
-        }
-        return projectUser;
       }
+      if (!projectUser) {
+        throw new NotFoundException('ProjectUser not found');
+      }
+      return projectUser;
     } catch (error) {}
   }
 }

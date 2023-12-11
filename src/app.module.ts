@@ -35,7 +35,7 @@ import { CsvExportModule } from './export-csv/csv-export.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Project, ProjectUser, Event], //__dirname + '/../**/*.entity.js'
+        entities: [User, Project, ProjectUser, Event],
         synchronize: true,
         autoLoadEntities: true,
       }),

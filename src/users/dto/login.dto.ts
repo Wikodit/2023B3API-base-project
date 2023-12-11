@@ -9,6 +9,7 @@ export class LoginDto {
     description: 'Email address',
   })
   public email: string;
+
   @IsNotEmpty()
   @Exclude()
   public password: string;
