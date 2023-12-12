@@ -27,6 +27,6 @@ export class UserSignUpDto {
 
   @IsOptional()
   @IsEnum(UserRole)
-  @IsNotEmpty()
+  //@IsNotEmpty()
   readonly role?: UserRole
 }

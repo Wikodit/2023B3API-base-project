@@ -9,7 +9,7 @@ export class ProjectUserService {
 
   constructor(
     @InjectRepository(ProjectUser)
-    private readonly repository: Repository<ProjectUser>
+    private readonly repository: Repository<ProjectUser>,
   ) {}
 
   /**

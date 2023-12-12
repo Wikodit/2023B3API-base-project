@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { User } from './user.entity'
 
-@Entity({ name: 'projects' })
+@Entity()
 export class Project {
   @PrimaryGeneratedColumn('uuid')
   readonly id!: string

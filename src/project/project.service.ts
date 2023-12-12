@@ -4,6 +4,7 @@ import { Project } from '../entity/project.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ProjectCreateDto } from '../dto/project-create.dto'
 import { UserService } from '../user/user.service'
+import { User, UserRole } from '../entity/user.entity'
 
 @Injectable()
 export class ProjectService {
@@ -29,6 +30,17 @@ export class ProjectService {
    */
   public async findAll(): Promise<Project[]> {
     return this.repository.find({relations: [ 'referringEmployee' ]})
+  }
+
+  /**
+   * Find projects depending on user
+   */
+  public async findProjectByUser(user: User): Promise<Project[]> {
+    if (user.role === UserRole.EMPLOYEE) {
+      this.repository.findBy({ referringEmployeeId: user.id })
+    }
+
+    return []
   }
 
   /**

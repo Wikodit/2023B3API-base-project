@@ -7,21 +7,19 @@ import {
   ParseUUIDPipe,
   Post,
   UnauthorizedException,
-  UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe
 } from '@nestjs/common'
-import { Project } from '../entity/project.entity'
-import { AuthGuard } from '../guard/auth.guard'
-import { ProjectCreateDto } from '../dto/project-create.dto'
-import { ProjectService } from './project.service'
 import { Roles } from '../decorator/roles.decorator'
-import { UserRole } from '../entity/user.entity'
-import { UserService } from '../user/user.service'
+import { ProjectCreateDto } from '../dto/project-create.dto'
+import { Project } from '../entity/project.entity'
+import { User, UserRole } from '../entity/user.entity'
 import { TransformInterceptor } from '../interceptor/transform.interceptor'
+import { UserService } from '../user/user.service'
+import { ProjectService } from './project.service'
+import { CurrentUser } from '../decorator/current-user.decorator'
 
-@UseGuards(AuthGuard)
 @UseInterceptors(TransformInterceptor)
 @UsePipes(ValidationPipe)
 @Controller('/projects')
@@ -42,17 +40,15 @@ export class ProjectController {
   }
 
   @Get()
-  public async getProjects(): Promise<Project[]> {
-    return this.projects.findAll()
+  public async getProjects(@CurrentUser() user: User): Promise<Project[]> {
+    return this.projects.findProjectByUser(user)
   }
 
   @Get('/:uuid')
-  public async getProject(
-    @Param('uuid', ParseUUIDPipe) uuid: string
-  ): Promise<Project> {
+  public async getProject(@Param('uuid', ParseUUIDPipe) uuid: string): Promise<Project> {
     const p = await this.projects.findById(uuid)
     if (!p) throw new NotFoundException()
-
+    
     return p
   }
 }

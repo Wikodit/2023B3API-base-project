@@ -27,7 +27,7 @@ export class UserService {
   public async create(dto: UserSignUpDto): Promise<User> {
     const user = this.repository.create({
       ...dto,
-      // replace plain password with argon2 hash
+      // override plain password with argon2 hash
       password: await Argon2.hash(dto.password)
     })
 

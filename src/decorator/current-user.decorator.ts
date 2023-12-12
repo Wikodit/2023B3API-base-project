@@ -8,7 +8,7 @@ import { RequestWithUser } from '../types'
  * 
  * This decorator require the current authenticated user to be injected into request (job done by AuthGuard).
  */
-export const CurrentUser = createParamDecorator(
+export const CurrentUser = createParamDecorator<keyof User>(
   (key: keyof User | null = null, ctx: ExecutionContext) => {
     const req: RequestWithUser = ctx.switchToHttp().getRequest()
     if (!req.user) return null

@@ -2,11 +2,11 @@ import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'ty
 import { Project } from './project.entity'
 import { User } from './user.entity'
 
-@Entity({ name: 'project_users' })
+@Entity()
 export class ProjectUser {
   @PrimaryGeneratedColumn('uuid')
   readonly id!: string
-
+  
   @Column()
   startDate!: Date
 

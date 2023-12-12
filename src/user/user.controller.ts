@@ -13,7 +13,6 @@ import { TransformInterceptor } from '../interceptor/transform.interceptor'
 import { AuthGuard } from '../guard/auth.guard'
 import { CurrentUser } from '../decorator/current-user.decorator'
 
-@UseGuards(AuthGuard)
 @UseInterceptors(TransformInterceptor)
 @Controller('/users')
 export class UserController {

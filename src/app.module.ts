@@ -6,6 +6,10 @@ import { User } from './entity/user.entity'
 import { ProjectModule } from './project/project.module'
 import { AuthModule } from './user/auth/auth.module'
 import { ProjectUserModule } from './project/project-user/project-user.module'
+import { Project } from './entity/project.entity'
+import { ProjectUser } from './entity/project-user.entity'
+import { APP_GUARD } from '@nestjs/core'
+import { AuthGuard } from './guard/auth.guard'
 
 @Module({
   imports: [
@@ -19,7 +23,7 @@ import { ProjectUserModule } from './project/project-user/project-user.module'
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User],
+        entities: [User, Project, ProjectUser ],
         synchronize: true,
         autoLoadEntities: true
       }),
@@ -28,9 +32,12 @@ import { ProjectUserModule } from './project/project-user/project-user.module'
     UserModule,
     AuthModule,
     ProjectModule,
-    //ProjectUserModule
+    ProjectUserModule
   ],
-  providers: [],
+  providers: [{
+    provide: APP_GUARD,
+    useClass: AuthGuard
+  }],
   exports: [],
   controllers: []
 })

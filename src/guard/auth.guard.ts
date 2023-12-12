@@ -34,7 +34,7 @@ export class AuthGuard implements CanActivate {
     )
 
     // Decorating a route handler or a controller class using @PublicAccess will
-    // disable authentication process for decorated member
+    // disable authentication process for decorated members
     if (publicAccess) return true
     const req: Request = context.switchToHttp().getRequest()
 
