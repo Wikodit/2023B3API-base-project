@@ -11,9 +11,7 @@ import { RequestWithUser } from '../types'
 export const CurrentUser = createParamDecorator<keyof User>(
   (key: keyof User | null = null, ctx: ExecutionContext) => {
     const req: RequestWithUser = ctx.switchToHttp().getRequest()
-    if (!req.user) return null
-    if (key) return req.user[key]
 
-    return req.user
+    return req.user ? (key ? req.user[key] : req.user) : null
   }
 )
