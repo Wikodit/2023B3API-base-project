@@ -1,18 +1,11 @@
-import {
-  Controller,
-  Get,
-  UseInterceptors,
-  UseGuards,
-  NotFoundException,
-  Param,
-  ParseUUIDPipe
-} from '@nestjs/common'
-import { UserService } from './user.service'
+import { Controller, Get, NotFoundException, Param, ParseUUIDPipe, UseInterceptors } from '@nestjs/common'
+import { CurrentUser } from '../decorator/current-user.decorator'
 import { User } from '../entity/user.entity'
 import { TransformInterceptor } from '../interceptor/transform.interceptor'
-import { AuthGuard } from '../guard/auth.guard'
-import { CurrentUser } from '../decorator/current-user.decorator'
+import { UserService } from './user.service'
+import { ApiBearerAuth } from '@nestjs/swagger'
 
+@ApiBearerAuth('JWT')
 @UseInterceptors(TransformInterceptor)
 @Controller('/users')
 export class UserController {
@@ -29,9 +22,7 @@ export class UserController {
   }
 
   @Get('/:uuid')
-  public async getUserById(
-    @Param('uuid', ParseUUIDPipe) uuid: string
-  ): Promise<User> {
+  public async getUserById(@Param('uuid', ParseUUIDPipe) uuid: string): Promise<User> {
     const user = await this.users.findById(uuid)
     if (user) return user
 

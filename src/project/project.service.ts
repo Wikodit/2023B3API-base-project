@@ -32,18 +32,20 @@ export class ProjectService {
    * Find all projects.
    */
   public async findAll(): Promise<Project[]> {
-    return this.repository.find({ relations: ['referringEmployee'] })
+    return this.repository.find({ relations: ['referringEmployee', 'members'] })
   }
 
   /**
    * Find projects depending on user
    */
   public async findProjectsDependingOnUser(user: User): Promise<Project[]> {
+    const projects = await this.findAll()
+
     if (user.role === UserRole.EMPLOYEE) {
-      return this.projectUsers.getUserProjects(user)
+      return projects.filter(p => p.members.find(pu => pu.userId === user.id))
     }
 
-    return this.findAll()
+    return projects
   }
 
   /**

@@ -8,7 +8,7 @@ export enum UserRole {
   PROJECT_MANAGER = 'ProjectManager'
 }
 
-@Entity({ name: 'users' })
+@Entity({ name: 'user' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
   readonly id!: string

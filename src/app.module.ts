@@ -10,10 +10,12 @@ import { Project } from './entity/project.entity'
 import { ProjectUser } from './entity/project-user.entity'
 import { APP_GUARD } from '@nestjs/core'
 import { AuthGuard } from './guard/auth.guard'
+import { EventModule } from './event/event.module'
+import { Event as EventEntity } from './entity/event.entity'
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: [ '.env', '.env.local' ] }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env', '.env.local'] }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -23,7 +25,7 @@ import { AuthGuard } from './guard/auth.guard'
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Project, ProjectUser ],
+        entities: [User, Project, ProjectUser, EventEntity],
         synchronize: true,
         autoLoadEntities: true
       }),
@@ -32,12 +34,15 @@ import { AuthGuard } from './guard/auth.guard'
     UserModule,
     AuthModule,
     ProjectModule,
-    ProjectUserModule
+    ProjectUserModule,
+    EventModule
   ],
-  providers: [{
-    provide: APP_GUARD,
-    useClass: AuthGuard
-  }],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard
+    }
+  ],
   exports: [],
   controllers: []
 })

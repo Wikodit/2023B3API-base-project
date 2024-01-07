@@ -21,8 +21,9 @@ import { TransformInterceptor } from '../interceptor/transform.interceptor'
 import { UserService } from '../user/user.service'
 import { ProjectUserService } from './project-user/project-user.service'
 import { ProjectService } from './project.service'
-import { instanceToPlain } from 'class-transformer'
+import { ApiBearerAuth } from '@nestjs/swagger'
 
+@ApiBearerAuth('JWT')
 @UseInterceptors(TransformInterceptor)
 @UsePipes(ValidationPipe)
 @Controller('/projects')
@@ -54,15 +55,12 @@ export class ProjectController {
   public async getProject(
     @CurrentUser() user: User,
     @Param('uuid', ParseUUIDPipe) uuid: string
-  ): Promise<Project> {
+  ): Promise<Project | null> {
     const project = await this.projects.findById(uuid)
     if (!project) throw new NotFoundException()
-    
-    console.log(instanceToPlain(project, { enableCircularCheck: true }))
 
-    if (user.role !== UserRole.EMPLOYEE || await this.projectUsers.isMemberOf(user, project)) {
+    if (user.role !== UserRole.EMPLOYEE || (await this.projectUsers.findProjectUser(user, project)) !== null)
       return project
-    }
 
     throw new ForbiddenException()
   }

@@ -13,7 +13,7 @@ async function bootstrap(): Promise<void> {
     .setVersion('1.0')
     .build()
   const document = SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup('api', app, document)
+  SwaggerModule.setup('api', app, document, {explorer: true })
 
   await app.listen(cfgService.get<number>('APP_PORT'))
 }
