@@ -13,5 +13,6 @@ export class ProjectResponseDto {
   referringEmployeeId: string;
 
   referringEmployee: UserResponseDto;
+
   projectUser?: ProjectUser[];
 }

@@ -46,7 +46,7 @@ export class ProjectUsersService {
       projectUser.userId,
     );
     const projectAssigned: ProjectReponsePartialDto =
-      await this.projectsService.findOneAdmin(projectUser.projectId);
+      await this.projectsService.findOneAsAdmin(projectUser.projectId);
     if (!projectAssigned || !userAssigned) {
       throw new NotFoundException('Not found');
     }
@@ -124,21 +124,6 @@ export class ProjectUsersService {
     }
   }
 
-  async employeeFindAll(
-    userRequest: UserResponseDto,
-  ): Promise<ProjectUsersResponseDto[]> {
-    const userRequestId: string = userRequest.id;
-    const usersProjectsAssigned: ProjectUsersResponseDto[] =
-      await this.projectUsersRepository.find({
-        where: { userId: userRequestId },
-      });
-    if (usersProjectsAssigned.length === 0) {
-      throw new ForbiddenException('No project for this user');
-    } else {
-      return usersProjectsAssigned;
-    }
-  }
-
   async projectManagerGetDate(
     userId: string,
     eventToValid: Date,
@@ -172,8 +157,7 @@ export class ProjectUsersService {
   async managerAndAdminfindAll(): Promise<ProjectUser[]> {
     const resultProject: ProjectUser[] =
       await this.projectUsersRepository.find();
-    console.log(resultProject);
-    return await this.projectUsersRepository.find();
+    return resultProject;
   }
 
   async findOneByDateAndUser(date: Date, userId: string): Promise<ProjectUser> {

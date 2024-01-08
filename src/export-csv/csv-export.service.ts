@@ -7,20 +7,24 @@ import { EventResponseDto } from '../events/dto/event-response.dto';
 import { UserResponseDto } from '../users/dto/user-response-dto';
 import { ProjectUsersService } from '../project-user/project-users.service';
 import * as cron from 'node-cron';
+import { ProjectUser } from '../project-user/entities/project-user.entity';
+import { ProjectResponseDto } from '../projects/dto/project-response-dto';
 
 @Injectable()
 export class CsvExportService {
   constructor(
     private readonly usersService: UsersService,
+
     private readonly eventsService: EventsService,
+
     private readonly projectsService: ProjectsService,
+
     private readonly projectUsersService: ProjectUsersService,
   ) {
     //Génération automatique du fichier csv le 25 de chaque mois
-    //Afin de tester cette fonctionnalité, remplacer par '*/1 * * * *'
-    //pour générer le fichier toutes les minutes
-    cron.schedule('0 0 25 * *', async () => {
-      console.log('Running csv export task');
+    //Pour tester cette fonctionnalité, remplacer par '*/1 * * * *' pour le générer chaques minutes.
+    //Pour le générer automatiquement chaque 25  :  '0 0 25 * *'
+    cron.schedule('*/1 * * * *', async () => {
       await this.exportCsvForCurrentMonth();
     });
   }
@@ -33,15 +37,13 @@ export class CsvExportService {
           const user: UserResponseDto = await this.usersService.findOne(
             event.userId,
           );
-          const projectUser =
+          const projectUser: ProjectUser =
             await this.projectUsersService.findOneByDateAndUser(
               new Date(event.date),
               event.userId,
             );
-          const project = await this.projectsService.findOne(
-            projectUser.projectId,
-            user,
-          );
+          const project: ProjectResponseDto =
+            await this.projectsService.findOne(projectUser.projectId, user);
           return {
             UserName: user.username,
             ProjectName: project.name,
@@ -49,7 +51,7 @@ export class CsvExportService {
         }),
       );
       const csvWriter = createObjectCsvWriter({
-        path: 'conges_acceptes.csv',
+        path: 'logs/conges_acceptes.csv',
         header: [
           { id: 'UserName', title: "Nom d'utilisateur" },
           { id: 'ProjectName', title: 'Nom du projet' },

@@ -12,7 +12,6 @@ import { ProjectUsersService } from './project-users.service';
 import { CreateProjectUsersDto } from './dto/create-project-users.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from '../users/dto/user-response-dto';
-import { UserRoleEnum } from '../users/entities/types/user.role.enum';
 import { UsersService } from '../users/users.service';
 import { ProjectUsersResponseDto } from './dto/project-users-response.dto';
 import { ProjectUser } from './entities/project-user.entity';
@@ -36,8 +35,7 @@ export class ProjectUsersController {
       const user: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
-      const userRole: UserRoleEnum = user.role;
-      if (userRole === 'Employee') {
+      if (user.role === 'Employee') {
         throw new UnauthorizedException(
           `${user.username} cannot assign a project to an employee`,
         );
@@ -69,12 +67,14 @@ export class ProjectUsersController {
       const userRequest: UserResponseDto = await this.usersService.findOne(
         req.user.sub,
       );
-      const userRole: string = userRequest.role;
       let projectUser: ProjectUsersResponseDto[];
-      if (userRole === 'Admin' || userRole === 'ProjectManager') {
+      if (
+        userRequest.role === 'Admin' ||
+        userRequest.role === 'ProjectManager'
+      ) {
         projectUser = await this.projectUsersService.managerAndAdminfindAll();
       }
-      if (userRole === 'Employee') {
+      if (userRequest.role === 'Employee') {
         projectUser =
           await this.projectUsersService.employeeFindAllOwnProjects(
             userRequest,

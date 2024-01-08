@@ -9,7 +9,7 @@ export class CsvExportController {
 
   @Public()
   @Get('current-month')
-  async exportCsvForCurrentMonth(@Res() res: Response) {
+  async exportCsvForCurrentMonth(@Res() res: Response): Promise<void> {
     await this.csvExportService.exportCsvForCurrentMonth();
 
     res.setHeader(

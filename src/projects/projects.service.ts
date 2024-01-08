@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ForbiddenException,
   forwardRef,
   Inject,
@@ -67,7 +66,7 @@ export class ProjectsService {
     }
     if (user.role === 'Employee') {
       const projectUsers: ProjectUsersResponseDto[] =
-        await this.projectUsersService.employeeFindAll(user);
+        await this.projectUsersService.employeeFindAllOwnProjects(user);
       const projectUser = projectUsers.find(
         (projectUser: ProjectUsersResponseDto) => projectUser.projectId === id,
       );
@@ -102,9 +101,9 @@ export class ProjectsService {
     user: UserResponseDto,
   ): Promise<ProjectResponseDto | ProjectResponseDto[]> {
     const projectUserList: ProjectUsersResponseDto[] =
-      await this.projectUsersService.employeeFindAll(user);
+      await this.projectUsersService.employeeFindAllOwnProjects(user);
     if (!projectUserList) {
-      throw new NotFoundException();
+      throw new NotFoundException('Project not found');
     }
     const projectPromises: Promise<ProjectResponseDto>[] = [];
     for (const projectUser of projectUserList) {
@@ -127,7 +126,7 @@ export class ProjectsService {
     return projectUserArray;
   }
 
-  async findOneAdmin(id: string): Promise<ProjectResponseDto> {
+  async findOneAsAdmin(id: string): Promise<ProjectResponseDto> {
     return await this.projectsRepository.findOne({ where: { id } });
   }
 }

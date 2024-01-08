@@ -50,12 +50,12 @@ export class EventsController {
       const eventsList: EventResponseDto[] = await this.eventsService.findAll();
       // 401 because of 3 TT in the same week
       const userAllEvents: EventResponseDto[] = eventsList.filter(
-        (event: EventResponseDto) => {
+        (event: EventResponseDto): boolean => {
           return event.userId === user.id;
         },
       );
       const userRemoteWorkEvents: EventResponseDto[] = userAllEvents.filter(
-        (event: EventResponseDto) => {
+        (event: EventResponseDto): boolean => {
           return event.eventType === EventTypeEnum.RemoteWork;
         },
       );
@@ -85,7 +85,6 @@ export class EventsController {
 
   @Get()
   @ApiOperation({ summary: 'Find all events' })
-  //@ApiResponse({ status: HttpStatus.OK, type: EventResponseDto })
   async findAll(): Promise<EventResponseDto[]> {
     try {
       return this.eventsService.findAll();
@@ -104,83 +103,66 @@ export class EventsController {
       throw error;
     }
   }
+
   @Post(':id/validate')
   @ApiOperation({ summary: 'Validation' })
   async validateOne(
     @Param('id') id: string,
     @Req() req,
   ): Promise<UpdateResult> {
-    try {
-      const user: UserResponseDto = await this.usersService.findOne(
-        req.user.sub,
-      );
-      const eventToValid = await this.eventsService.findOne(id);
-      if (user.role === 'Employee') {
-        throw new UnauthorizedException(
-          'User is not allowed to see this event',
+    const { user, event } = await this.verifyEventAndUser(req.user.sub, id);
+    if (user.role === 'ProjectManager') {
+      const isSameDate: ProjectUser | void =
+        await this.projectUsersService.projectManagerGetDate(
+          user.id,
+          new Date(event.date),
         );
+      if (isSameDate == null) {
+        throw new UnauthorizedException("Manager can't validate this event");
       }
-      if (
-        eventToValid.eventStatus === 'Accepted' ||
-        eventToValid.eventStatus === 'Declined'
-      ) {
-        throw new ForbiddenException('Event already accepted or declined');
-      }
-
-      if (user.role === 'ProjectManager') {
-        const isSameDate: ProjectUser | void =
-          await this.projectUsersService.projectManagerGetDate(
-            user.id,
-            new Date(eventToValid.date),
-          );
-        if (isSameDate == null) {
-          throw new UnauthorizedException("Manager can't validate this event");
-        }
-        return await this.eventsService.acceptEvent(eventToValid.id);
-      }
-      if (user.role === 'Admin') {
-        return await this.eventsService.acceptEvent(eventToValid.id);
-      }
-    } catch (error) {
-      throw error;
     }
+    return await this.eventsService.acceptEvent(event.id);
   }
 
   @Post(':id/decline')
-  @ApiOperation({ summary: 'Validation' })
+  @ApiOperation({ summary: 'Decline' })
   async declineOne(@Param('id') id: string, @Req() req): Promise<UpdateResult> {
-    try {
-      const user: UserResponseDto = await this.usersService.findOne(
-        req.user.sub,
-      );
-      const eventToValid = await this.eventsService.findOne(id);
-      if (user.role === 'Employee') {
-        throw new UnauthorizedException(
-          'User is not allowed to see this event',
+    const { user, event } = await this.verifyEventAndUser(req.user.sub, id);
+    if (user.role === 'ProjectManager') {
+      const isSameDate: ProjectUser | void =
+        await this.projectUsersService.projectManagerGetDate(
+          user.id,
+          new Date(event.date),
         );
+      if (isSameDate == null) {
+        throw new UnauthorizedException("Manager can't decline this event");
       }
-      if (
-        eventToValid.eventStatus === 'Accepted' ||
-        eventToValid.eventStatus === 'Declined'
-      ) {
-        throw new Error('Event already accepted or declined');
-      }
-      if (user.role === 'ProjectManager') {
-        const isSameDate: ProjectUser | void =
-          await this.projectUsersService.projectManagerGetDate(
-            user.id,
-            new Date(eventToValid.date),
-          );
-        if (isSameDate == null) {
-          throw new UnauthorizedException("Manager can't validate this event");
-        }
-        return await this.eventsService.declineEvent(eventToValid.id);
-      }
-      if (user.role === 'Admin') {
-        return await this.eventsService.declineEvent(eventToValid.id);
-      }
-    } catch (error) {
-      throw error;
     }
+    return await this.eventsService.declineEvent(event.id);
+  }
+
+  private async verifyEventAndUser(
+    userId: string,
+    eventId: string,
+  ): Promise<{ user: UserResponseDto; event: EventResponseDto }> {
+    const user: UserResponseDto = await this.usersService.findOne(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.role === 'Employee') {
+      throw new UnauthorizedException(
+        'User is not allowed to perform this action',
+      );
+    }
+
+    const event: EventResponseDto = await this.eventsService.findOne(eventId);
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+    if (event.eventStatus === 'Accepted' || event.eventStatus === 'Declined') {
+      throw new ForbiddenException('Event already processed');
+    }
+
+    return { user, event };
   }
 }
