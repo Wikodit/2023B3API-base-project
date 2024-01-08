@@ -88,7 +88,7 @@ export class EventsService {
     const monthRange = this.getMonthRange(month);
     const businessDays = this.getBusinessDaysInMonth(month);
 
-    // Récupérer tous les jours de télétravail ou de congés payés dans le mois
+//récupération des jours de TT + les jours de congés.
     const nonEligibleDays = await this.eventRepository.find({
       where: {
         userId,
@@ -102,7 +102,7 @@ export class EventsService {
     // Soustraire les jours non éligibles des jours ouvrables
     const eligibleDays = businessDays - nonEligibleDays.length;
 
-    // Calculer le montant des titres-restaurant (8 euros par jour éligible)
+    // Calculer les tickets Resto (8 euros)
     return eligibleDays * 8;
   }
   private getBusinessDaysInMonth(month: number): number {

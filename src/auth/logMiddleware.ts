@@ -19,7 +19,7 @@ export class RequestLoggerMiddleware implements NestMiddleware {
 
     next();
   }
-
+//Récupere l'ip du client utilisé
   private getClientIp(req: Request): string {
     const forwardedFor = req.headers['x-forwarded-for'];
     if (forwardedFor) {
